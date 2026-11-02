@@ -35,14 +35,7 @@ export default async function FamiliesPage({ searchParams }: {
     {params.removed && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Membro retirado da família. O cadastro do membro foi mantido.</p>}\n    {params.updated && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Responsável familiar actualizado.</p>}
     {params.error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{params.error === "invalid" ? "Verifique os dados seleccionados." : "Não foi possível guardar. Confirme as permissões e tente novamente."}</p>}
 
-    <section className="rounded-xl border border-slate-200 bg-white p-5">
-      <h2 className="font-semibold text-[#142b4a]">Registar nova família</h2>
-      <p className="mt-1 text-xs text-slate-500">As famílias também são criadas automaticamente quando regista um membro com um novo nome de família.</p>
-      <form action={createFamily} className="mt-4 flex flex-col gap-3 sm:flex-row">
-        <input name="family_name" required minLength={2} maxLength={160} placeholder="Ex.: Família António Manuel" className={input}/>
-        <button className={button}>Criar família</button>
-      </form>
-    </section>
+
 
     <section className="space-y-4">
       <div><h2 className="text-lg font-semibold text-[#142b4a]">Agregados familiares</h2><p className="text-sm text-slate-500">Seleccione o responsável e consulte os integrantes associados através do cadastro de membros.</p></div>
@@ -69,5 +62,13 @@ export default async function FamiliesPage({ searchParams }: {
         </article>;
       })}</div>}
     </section>
+        <details className="rounded-xl border border-slate-200 bg-white p-5"><summary className="cursor-pointer list-none font-semibold text-blue-800">＋ Registar nova família</summary><section className="pt-4">
+      <h2 className="font-semibold text-[#142b4a]">Registar nova família</h2>
+      <p className="mt-1 text-xs text-slate-500">As famílias também são criadas automaticamente quando regista um membro com um novo nome de família.</p>
+      <form action={createFamily} className="mt-4 flex flex-col gap-3 sm:flex-row">
+        <input name="family_name" required minLength={2} maxLength={160} placeholder="Ex.: Família António Manuel" className={input}/>
+        <button className={button}>Criar família</button>
+      </form>
+    </section></details>
   </main>;
 }
