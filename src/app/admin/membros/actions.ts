@@ -99,7 +99,7 @@ export async function updateMember(formData: FormData) {
 
   const allowedStatuses = ["visitante", "em_integracao", "ativo", "inativo", "transferido"];
   const validEmail = !email || /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);
-  const validDate = (value: string) => !value || /^\\d{4}-\\d{2}-\\d{2}$/.test(value);
+  const validDate = (value: string) => {\n    if (!value) return true;\n    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;\n    const parsed = new Date(`${value}T00:00:00.000Z`);\n    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;\n  };
   if (
     !id || fullName.length < 3 || fullName.length > 160 ||
     phone.length > 40 || whatsapp.length > 40 || email.length > 254 ||
@@ -110,7 +110,7 @@ export async function updateMember(formData: FormData) {
     redirect(`/admin/membros/${encodeURIComponent(id)}?error=invalid`);
   }
 
-  const { error } = await supabase.from("members").update({
+  const { data: updatedMember, error } = await supabase.from("members").update({
     full_name: fullName,
     gender: gender || null,
     birth_date: birthDate || null,
