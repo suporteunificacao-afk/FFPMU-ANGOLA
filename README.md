@@ -31,4 +31,4 @@ npm run dev
 
 Preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` com os valores do projeto. Nunca exponha chaves secretas ou `service_role` no cliente.
 
-Consulte `docs/ROADMAP.md` e `docs/SETUP.md`.
+Consulte `docs/ROADMAP.md`, `docs/SETUP.md` e `docs/DEPLOYMENT.md` para publicar a aplicação na Vercel.
