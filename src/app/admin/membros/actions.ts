@@ -61,8 +61,8 @@ function buildMemberPayload(formData: FormData, familyId: string | null) {
     fullName.length < 3 || fullName.length > 160 ||
     email.length > 254 || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) ||
     !allowedStatuses.includes(status) || invalidDate ||
-    readText(formData, "category").length > 100 ||
-    readText(formData, "family_name").length > 160 ||
+    !readText(formData, "category") || readText(formData, "category").length > 100 ||
+    !readText(formData, "family_name") || readText(formData, "family_name").length > 160 ||
     (childrenCount !== "" && (!/^\d+$/.test(childrenCount) || Number(childrenCount) > 1000))
   ) return null;
 
