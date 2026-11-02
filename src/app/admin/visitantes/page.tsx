@@ -47,20 +47,7 @@ export default async function VisitorsPage({ searchParams }: {
       {Object.entries(statuses).map(([key,label]) => <div key={key} className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-xs text-slate-500">{label}</p><p className="mt-1 text-2xl font-semibold text-[#142b4a]">{counts[key]}</p></div>)}
     </section>
 
-    <section className="rounded-xl border border-slate-200 bg-white p-5">
-      <h2 className="font-semibold text-[#142b4a]">Registar visitante</h2>
-      <form action={createVisitor} className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <label className="text-xs font-medium text-slate-700">Nome completo *<input name="full_name" required minLength={2} maxLength={160} className={field} /></label>
-        <label className="text-xs font-medium text-slate-700">Telefone<input name="phone" maxLength={40} className={field} /></label>
-        <label className="text-xs font-medium text-slate-700">WhatsApp<input name="whatsapp" maxLength={40} className={field} /></label>
-        <label className="text-xs font-medium text-slate-700">E-mail<input name="email" type="email" maxLength={254} className={field} /></label>
-        <label className="text-xs font-medium text-slate-700">Data da primeira visita<input name="first_visit_date" type="date" defaultValue={today} className={field} /></label>
-        <label className="text-xs font-medium text-slate-700">Convidado por<input name="invited_by" maxLength={160} className={field} /></label>
-        <label className="text-xs font-medium text-slate-700 sm:col-span-2">Morada<input name="address" maxLength={500} className={field} /></label>
-        <label className="text-xs font-medium text-slate-700 lg:col-span-3">Observações iniciais<textarea name="follow_up_notes" rows={2} maxLength={2000} className={field} /></label>
-        <div className="lg:col-span-3"><button className={button}>Guardar visitante</button></div>
-      </form>
-    </section>
+
 
     <section className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-lg font-semibold text-[#142b4a]">Lista e acompanhamento</h2><p className="text-sm text-slate-500">Abra cada registo para consultar o histórico e actualizar o acompanhamento.</p></div>
@@ -82,5 +69,19 @@ export default async function VisitorsPage({ searchParams }: {
         </article>;
       })}</div>}
     </section>
+        <details className="rounded-xl border border-slate-200 bg-white p-5"><summary className="cursor-pointer list-none font-semibold text-blue-800">＋ Registar visitante</summary><section className="pt-4">
+      <h2 className="font-semibold text-[#142b4a]">Registar visitante</h2>
+      <form action={createVisitor} className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <label className="text-xs font-medium text-slate-700">Nome completo *<input name="full_name" required minLength={2} maxLength={160} className={field} /></label>
+        <label className="text-xs font-medium text-slate-700">Telefone<input name="phone" maxLength={40} className={field} /></label>
+        <label className="text-xs font-medium text-slate-700">WhatsApp<input name="whatsapp" maxLength={40} className={field} /></label>
+        <label className="text-xs font-medium text-slate-700">E-mail<input name="email" type="email" maxLength={254} className={field} /></label>
+        <label className="text-xs font-medium text-slate-700">Data da primeira visita<input name="first_visit_date" type="date" defaultValue={today} className={field} /></label>
+        <label className="text-xs font-medium text-slate-700">Convidado por<input name="invited_by" maxLength={160} className={field} /></label>
+        <label className="text-xs font-medium text-slate-700 sm:col-span-2">Morada<input name="address" maxLength={500} className={field} /></label>
+        <label className="text-xs font-medium text-slate-700 lg:col-span-3">Observações iniciais<textarea name="follow_up_notes" rows={2} maxLength={2000} className={field} /></label>
+        <div className="lg:col-span-3"><button className={button}>Guardar visitante</button></div>
+      </form>
+    </section></details>
   </main>;
 }
