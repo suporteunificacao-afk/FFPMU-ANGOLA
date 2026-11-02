@@ -18,6 +18,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!supabase) redirect("/login?setup=required");
   const { data: claims, error } = await supabase.auth.getClaims();
   if (error || !claims?.claims) redirect("/login");
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const { data: profile } = await supabase.from("profiles").select("church_id,is_active").eq("id", user.id).maybeSingle();
+  if (!profile?.is_active) redirect("/login");
+  if (!profile.church_id) redirect("/setup");
   return <div className="min-h-screen md:flex">
     <aside className="w-full shrink-0 bg-[#142b4a] text-white md:min-h-screen md:w-72">
       <div className="border-b border-white/10 px-6 py-6"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#d6b56c]">FFPMU Angola</p><p className="mt-1 text-sm text-slate-300">Gestão da Igreja</p></div>
