@@ -8,9 +8,9 @@ const fieldClass = "mt-1.5 w-full rounded-lg border border-slate-300 bg-white px
 const labelClass = "block text-sm font-medium text-slate-700";
 
 function Field({ label, name, value, type = "text", maxLength }: {
-  label: string; name: string; value: string | number | null; type?: string; maxLength?: number;
+  label: string; name: string; value: string | number | null; type?: string; maxLength?: number; required?: boolean;
 }) {
-  return <label className={labelClass}>{label}<input name={name} type={type} defaultValue={value ?? ""} maxLength={maxLength} className={fieldClass} /></label>;
+  return <label className={labelClass}>{label}<input name={name} type={type} defaultValue={value ?? ""} maxLength={maxLength} required={required} className={fieldClass} /></label>;
 }
 
 function Seminar({ days, completed, date, place }: { days: "2" | "7" | "21" | "40"; completed: boolean; date: string | null; place: string | null }) {
@@ -121,8 +121,8 @@ export default async function MemberDetailPage({
           <h2 className="font-semibold text-[#142b4a]">Família e categoria</h2>
           <p className="mt-1 text-xs text-slate-500">Use o mesmo nome de família para associar pais e filhos ao mesmo agregado familiar.</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <Field label="Família" name="family_name" value={familyName} maxLength={160} />
-            <Field label="Categoria / grupo" name="category" value={member.category} maxLength={100} />
+            <Field label="Família" name="family_name" value={familyName} maxLength={160} required />
+            <Field label="Categoria / grupo" name="category" value={member.category} maxLength={100} required />
           </div>
         </section>
 
