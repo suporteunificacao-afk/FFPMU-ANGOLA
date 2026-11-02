@@ -115,7 +115,12 @@ export default async function MembersPage({
           <h2 className="font-semibold text-[#142b4a]">Membros registados</h2>
           <p className="mt-1 text-xs text-slate-500">Lista dos 100 registos mais recentes visíveis para a sua conta.</p>
         </div>
-        {error ? (\n          <div className="px-6 py-12 text-center">\n            <p className="font-medium text-[#142b4a]">Não foi possível apresentar a lista.</p>\n            <p className="mt-2 text-sm text-slate-500">Corrija as permissões de leitura ou tente novamente mais tarde.</p>\n          </div>\n        ) : members && members.length > 0 ? (
+        {error ? (
+          <div className="px-6 py-12 text-center">
+            <p className="font-medium text-[#142b4a]">Não foi possível apresentar a lista.</p>
+            <p className="mt-2 text-sm text-slate-500">Corrija as permissões de leitura ou tente novamente mais tarde.</p>
+          </div>
+        ) : members && members.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[680px] text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
