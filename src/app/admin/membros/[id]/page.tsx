@@ -110,7 +110,7 @@ export default async function MemberDetailPage({
                 <option value="transferido">Transferido</option>
               </select>
             </label>
-            <Field label="Registado em" name="created_at_display" value={member.created_at ? new Date(member.created_at).toLocaleDateString("pt-AO") : null} />
+            <div className="rounded-lg bg-slate-50 p-3"><p className="text-xs font-semibold text-slate-500">Registado em</p><p className="mt-1 text-sm text-[#142b4a]">{member.created_at ? new Date(member.created_at).toLocaleDateString("pt-AO") : "—"}</p></div>
           </div>
           <label className="mt-4 block text-sm font-medium text-slate-700">Observações
             <textarea name="notes" rows={4} maxLength={5000} defaultValue={member.notes ?? ""} className={fieldClass} />
