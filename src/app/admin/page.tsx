@@ -1,13 +1,12 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Database, ShieldCheck, Users, CalendarDays } from "lucide-react";
 
 const cards = [
-  { title: "Membros", detail: "Cadastro e acompanhamento", icon: Users, href: "/admin/membros" },
-  { title: "Programação", detail: "Cultos, eventos e escalas", icon: CalendarDays, href: "/admin/cultos" },
-  { title: "Segurança", detail: "Perfis e permissões", icon: ShieldCheck, href: "/admin/utilizadores" },
-  { title: "Base de dados", detail: "Persistência Supabase", icon: Database, href: "/admin/configuracoes" },
+  { title: "Membros", detail: "Cadastro e acompanhamento", icon: Users },
+  { title: "Programação", detail: "Cultos, eventos e escalas", icon: CalendarDays },
+  { title: "Segurança", detail: "Perfis e permissões", icon: ShieldCheck },
+  { title: "Base de dados", detail: "Persistência Supabase", icon: Database },
 ];
 
 export default async function DashboardPage() {
@@ -42,14 +41,14 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {cards.map(({ title, detail, icon: Icon, href }) => (
-          <Link key={title} href={href} className="rounded-xl border border-slate-200 bg-white p-5 transition hover:border-amber-300 hover:shadow-sm">
+        {cards.map(({ title, detail, icon: Icon }) => (
+          <div key={title} className="rounded-xl border border-slate-200 bg-white p-5">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-[#142b4a]">
               <Icon size={20} />
             </div>
             <h2 className="mt-4 font-semibold text-[#142b4a]">{title}</h2>
             <p className="mt-1 text-sm text-slate-500">{detail}</p>
-          </Link>
+          </div>
         ))}
       </div>
 
