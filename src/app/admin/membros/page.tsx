@@ -45,11 +45,12 @@ export default async function MembersPage({
   if (!profile.church_id) redirect("/setup");
 
   let membersQuery = supabase.from("members")
-    .select("id,member_code,full_name,phone,email,status,photo_path,created_at")
+    .select("id,member_code,full_name,phone,email,status,photo_path,created_at,family_id,category")
     .order("created_at", { ascending: false }).limit(100);
   if (query) membersQuery = membersQuery.ilike("full_name", "%" + query + "%");
   if (statusFilter) membersQuery = membersQuery.eq("status", statusFilter);
   const { data: members, error } = await membersQuery;
+  const { data: families } = await supabase.from("families").select("id,family_name");
 
   return (
     <div className="mx-auto max-w-6xl space-y-7">
@@ -182,7 +183,7 @@ export default async function MembersPage({
         {error ? <p className="px-6 py-12 text-center text-sm text-amber-900">Não foi possível carregar os membros.</p> : members && members.length ? (
           <div className="overflow-x-auto"><table className="w-full min-w-[680px] text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-6 py-3">Nome</th><th className="px-6 py-3">Família / Categoria</th><th className="px-6 py-3">Contacto</th><th className="px-6 py-3">Estado</th></tr></thead>
-            <tbody className="divide-y divide-slate-100">{members.map((member) => <tr key={member.id} className="hover:bg-slate-50"><td className="px-6 py-4 font-medium text-[#142b4a]"><Link href={"/admin/membros/" + member.id} className="hover:underline">{member.full_name}</Link></td><td className="px-6 py-4 text-slate-500">{member.member_code || "—"}</td><td className="px-6 py-4 text-slate-600">{member.phone || member.email || "—"}</td><td className="px-6 py-4">{member.status}</td></tr>)}</tbody>
+            <tbody className="divide-y divide-slate-100">{members.map((member) => <tr key={member.id} className="hover:bg-slate-50"><td className="px-6 py-4 font-medium text-[#142b4a]"><Link href={"/admin/membros/" + member.id} className="hover:underline">{member.full_name}</Link></td><td className="px-6 py-4 text-slate-500">{families?.find((family) => family.id === member.family_id)?.family_name || "—"}<span className="block text-xs">{member.category || "Sem categoria"}</span></td><td className="px-6 py-4 text-slate-600">{member.phone || member.email || "—"}</td><td className="px-6 py-4">{member.status}</td></tr>)}</tbody>
           </table></div>
         ) : <p className="px-6 py-12 text-center text-sm text-slate-500">Ainda não existem membros registados.</p>}
       </section>
