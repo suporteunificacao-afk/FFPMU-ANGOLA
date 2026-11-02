@@ -32,7 +32,8 @@ export default async function FamiliesPage({ searchParams }: {
     </header>
 
     {params.created && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Família criada com sucesso.</p>}
-    {params.removed && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Membro retirado da família. O cadastro do membro foi mantido.</p>}\n    {params.updated && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Responsável familiar actualizado.</p>}
+    {params.removed && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Membro retirado da família. O cadastro do membro foi mantido.</p>}
+    {params.updated && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Responsável familiar actualizado.</p>}
     {params.error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{params.error === "invalid" ? "Verifique os dados seleccionados." : "Não foi possível guardar. Confirme as permissões e tente novamente."}</p>}
 
 
