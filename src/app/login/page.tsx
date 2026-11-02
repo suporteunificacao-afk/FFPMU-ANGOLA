@@ -24,7 +24,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       {params.setup && <p className="mt-4 text-sm text-amber-800">Configure as variáveis do Supabase para continuar.</p>}
       {params.error && <p className="mt-4 text-sm text-red-700">Não foi possível iniciar sessão. Verifique as credenciais.</p>}
       <form action={signIn} className="mt-7 space-y-4"><label className="block text-sm font-medium text-slate-700">E-mail<input name="email" type="email" required className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-amber-600"/></label><label className="block text-sm font-medium text-slate-700">Palavra-passe<input name="password" type="password" required className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-amber-600"/></label><button disabled={!supabase} className="w-full rounded-lg bg-[#142b4a] px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">Iniciar sessão</button></form>
-      <p className="mt-6 text-xs leading-5 text-slate-500">As contas e permissões serão geridas pelo administrador do sistema. Não existe registo público de utilizadores.</p>
+      <p className="mt-6 text-center text-sm text-slate-600">Primeiro acesso? <Link href="/primeiro-acesso" className="font-semibold text-amber-700">Criar conta de administrador</Link></p>
+      <p className="mt-4 text-xs leading-5 text-slate-500">A primeira conta pode iniciar a configuração da igreja. Depois da configuração inicial, a atribuição de privilégios fica protegida na base de dados.</p>
     </div>
   </main>;
 }
