@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { updateMember } from "../actions";
 
 const statusLabels: Record<string, string> = {
   visitante: "Visitante",
@@ -10,17 +11,28 @@ const statusLabels: Record<string, string> = {
   transferido: "Transferido",
 };
 
-function Detail({ label, value }: { label: string; value: string | null }) {
+const fieldClass = "mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-amber-600";
+
+function Field({ label, name, value, type = "text", maxLength }: {
+  label: string; name: string; value: string | null; type?: string; maxLength?: number;
+}) {
   return (
-    <div className="rounded-lg bg-slate-50 p-4">
-      <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</dt>
-      <dd className="mt-1 break-words text-sm text-[#142b4a]">{value || "—"}</dd>
-    </div>
+    <label className="block text-sm font-medium text-slate-700">
+      {label}
+      <input name={name} type={type} defaultValue={value ?? ""} maxLength={maxLength} className={fieldClass} />
+    </label>
   );
 }
 
-export default async function MemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function MemberDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ updated?: string; error?: string }>;
+}) {
   const { id } = await params;
+  const query = await searchParams;
   const supabase = await createClient();
   if (!supabase) redirect("/login?setup=required");
 
@@ -66,30 +78,49 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ i
           <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700">{statusLabels[member.status] ?? member.status}</span>
         </div>
       </header>
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="font-semibold text-[#142b4a]">Dados pessoais e contacto</h2>
-        <dl className="mt-4 grid gap-3 sm:grid-cols-2">
-          <Detail label="Género" value={member.gender} />
-          <Detail label="Data de nascimento" value={member.birth_date} />
-          <Detail label="Telefone" value={member.phone} />
-          <Detail label="WhatsApp" value={member.whatsapp} />
-          <Detail label="E-mail" value={member.email} />
-          <Detail label="Morada" value={member.address} />
-        </dl>
-      </div>
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="font-semibold text-[#142b4a]">Percurso na igreja</h2>
-        <dl className="mt-4 grid gap-3 sm:grid-cols-2">
-          <Detail label="Data de entrada" value={member.joined_at} />
-          <Detail label="Data de baptismo" value={member.baptized_at} />
-          <Detail label="Registado em" value={member.created_at ? new Date(member.created_at).toLocaleDateString("pt-AO") : null} />
-        </dl>
-        <div className="mt-3 rounded-lg bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Observações</p>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-[#142b4a]">{member.notes || "Sem observações registadas."}</p>
+
+      {query.updated && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Dados do membro actualizados com sucesso.</p>}
+      {query.error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{query.error === "invalid" ? "Existem campos inválidos. Reveja os dados e tente novamente." : "Não foi possível actualizar. Confirme se tem a permissão members.update."}</p>}
+
+      <form action={updateMember} className="space-y-6">
+        <input type="hidden" name="member_id" value={member.id} />
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <h2 className="font-semibold text-[#142b4a]">Dados pessoais e contacto</h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2"><Field label="Nome completo *" name="full_name" value={member.full_name} maxLength={160} /></div>
+            <Field label="Género" name="gender" value={member.gender} maxLength={40} />
+            <Field label="Data de nascimento" name="birth_date" value={member.birth_date} type="date" />
+            <Field label="Telefone" name="phone" value={member.phone} maxLength={40} />
+            <Field label="WhatsApp" name="whatsapp" value={member.whatsapp} maxLength={40} />
+            <Field label="E-mail" name="email" value={member.email} type="email" maxLength={254} />
+            <Field label="Morada" name="address" value={member.address} maxLength={500} />
+          </div>
         </div>
-      </div>
-      <p className="text-xs text-slate-500">Esta ficha respeita as permissões de leitura definidas na base de dados. A edição será disponibilizada após validação do fluxo de actualização e das permissões correspondentes.</p>
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <h2 className="font-semibold text-[#142b4a]">Percurso na igreja</h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <Field label="Data de entrada" name="joined_at" value={member.joined_at} type="date" />
+            <Field label="Data de baptismo" name="baptized_at" value={member.baptized_at} type="date" />
+            <label className="block text-sm font-medium text-slate-700">Estado
+              <select name="status" defaultValue={member.status} className={fieldClass}>
+                <option value="visitante">Visitante</option>
+                <option value="em_integracao">Em integração</option>
+                <option value="ativo">Activo</option>
+                <option value="inativo">Inactivo</option>
+                <option value="transferido">Transferido</option>
+              </select>
+            </label>
+            <Field label="Registado em" name="created_at_display" value={member.created_at ? new Date(member.created_at).toLocaleDateString("pt-AO") : null} />
+          </div>
+          <label className="mt-4 block text-sm font-medium text-slate-700">Observações
+            <textarea name="notes" rows={4} maxLength={5000} defaultValue={member.notes ?? ""} className={fieldClass} />
+          </label>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs text-slate-500">A gravação é autorizada pela política members.update da base de dados.</p>
+          <button className="rounded-lg bg-[#142b4a] px-5 py-3 text-sm font-semibold text-white hover:bg-[#1d3c63]">Guardar alterações</button>
+        </div>
+      </form>
     </section>
   );
 }
