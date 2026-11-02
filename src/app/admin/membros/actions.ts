@@ -55,6 +55,8 @@ function buildMemberPayload(formData: FormData, familyId: string | null) {
   const parsedDates = Object.fromEntries(dates.map((key) => [key, readDate(formData, key)]));
   const invalidDate = Object.values(parsedDates).some((value) => value === undefined);
   const languages = formData.getAll("languages").filter((value): value is string => typeof value === "string" && allowedLanguages.includes(value));
+  const otherLanguages = readText(formData, "other_languages").slice(0, 250);
+  if (otherLanguages) languages.push("Outras: " + otherLanguages);
   const childrenCount = readText(formData, "children_second_generation");
 
   if (
@@ -81,7 +83,7 @@ function buildMemberPayload(formData: FormData, familyId: string | null) {
     ["seminar_7_days_place", 160], ["seminar_21_days_place", 160],
     ["seminar_40_days_place", 160], ["public_life", 300],
     ["public_life_location", 160], ["blessing_location", 160],
-    ["blessing_fund", 160], ["fasting", 160], ["local_center", 160], ["notes", 5000],
+    ["blessing_fund", 160], ["fasting", 160], ["local_center", 160], ["notes", 5000], ["additional_notes", 5000],
   ] as const;
   const optionalValues = Object.fromEntries(optionalFields.map(([key, max]) => [key, text(key, max)]));
   if (Object.values(optionalValues).some((value) => value === undefined)) return null;
@@ -90,7 +92,7 @@ function buildMemberPayload(formData: FormData, familyId: string | null) {
     full_name: fullName, gender: optionalValues.gender, birth_date: date("birth_date"),
     phone: optionalValues.phone, whatsapp: optionalValues.whatsapp, email: email || null,
     address: optionalValues.address, joined_at: date("joined_at"), baptized_at: date("baptized_at"),
-    status, notes: optionalValues.notes, family_id: familyId, category: text("category", 100),
+    status, notes: [optionalValues.notes, optionalValues.additional_notes].filter(Boolean).join("\\n\\n") || null, family_id: familyId, category: text("category", 100),
     father_name: optionalValues.father_name, mother_name: optionalValues.mother_name,
     spouse_name: optionalValues.spouse_name, spouse_father_name: optionalValues.spouse_father_name,
     spouse_mother_name: optionalValues.spouse_mother_name, naturality: optionalValues.naturality,
