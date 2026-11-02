@@ -120,7 +120,6 @@ export default async function MembersPage({ searchParams }: {
 
       <div className="flex justify-end gap-2 border-t border-slate-200 pt-4"><Link href="/admin" className="rounded-md border border-slate-300 bg-white px-5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">Cancelar</Link><button className="rounded-md bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-blue-700">Guardar membro</button></div>
     </form>
-
-
+    </details>
   </div>;
 }
