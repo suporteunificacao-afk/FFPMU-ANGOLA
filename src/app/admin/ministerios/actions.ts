@@ -23,7 +23,7 @@ export async function createMinistry(formData: FormData) {
   const { supabase, user, profile } = await context();
   const name = clean(formData.get("name"), 120);
   if (name.length < 2) redirect(listPath + "?error=invalid");
-  const { error } = await supabase.from("ministrys").insert({
+  const { error } = await supabase.from("ministries").insert({
     name, church_id: profile.church_id, branch_id: profile.branch_id, created_by: user.id,
   });
   if (error) redirect(listPath + "?error=save");
@@ -37,7 +37,7 @@ export async function updateMinistry(formData: FormData) {
   const name = clean(formData.get("name"), 120);
   const isActive = formData.get("is_active") === "on";
   if (!id || name.length < 2) redirect(listPath + "?error=invalid");
-  const { data, error } = await supabase.from("ministrys").update({
+  const { data, error } = await supabase.from("ministries").update({
     name, is_active: isActive, updated_at: new Date().toISOString(),
   }).eq("id", id).eq("church_id", profile.church_id).eq("branch_id", profile.branch_id).select("id").maybeSingle();
   if (error || !data) redirect(detailPath(id) + "?error=save");
@@ -54,7 +54,7 @@ export async function addMinistryMember(formData: FormData) {
   const title = clean(formData.get("position_title"), 120);
   if (!ministryId || displayName.length < 2 || !title) redirect(detailPath(ministryId) + "?error=invalid");
   const [{ data: ministry }, { data: member }, { data: last }] = await Promise.all([
-    supabase.from("ministrys").select("id").eq("id", ministryId).eq("church_id", profile.church_id).eq("branch_id", profile.branch_id).maybeSingle(),
+    supabase.from("ministries").select("id").eq("id", ministryId).eq("church_id", profile.church_id).eq("branch_id", profile.branch_id).maybeSingle(),
     memberId ? supabase.from("members").select("id").eq("id", memberId).eq("church_id", profile.church_id).eq("branch_id", profile.branch_id).maybeSingle() : Promise.resolve({ data: null }),
     supabase.from("ministry_members").select("display_order").eq("ministry_id", ministryId).eq("church_id", profile.church_id).order("display_order", { ascending: false }).limit(1).maybeSingle(),
   ]);

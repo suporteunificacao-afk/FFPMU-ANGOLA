@@ -24,7 +24,7 @@ export async function createDepartment(formData: FormData) {
   const name = clean(formData.get("name"), 120);
   if (name.length < 2) redirect(listPath + "?error=invalid");
   const { error } = await supabase.from("departments").insert({
-    name, church_id: profile.church_id, branch_id: profile.branch_id, created_by: user.id,
+    church_id: profile.church_id, branch_id: profile.branch_id, created_by: user.id,
   });
   if (error) redirect(listPath + "?error=save");
   revalidatePath(listPath);
@@ -35,6 +35,7 @@ export async function updateDepartment(formData: FormData) {
   const { supabase, profile } = await context();
   const id = clean(formData.get("department_id"), 64);
   const name = clean(formData.get("name"), 120);
+  const description = clean(formData.get("description"), 2000);
   const isActive = formData.get("is_active") === "on";
   if (!id || name.length < 2) redirect(listPath + "?error=invalid");
   const { data, error } = await supabase.from("departments").update({

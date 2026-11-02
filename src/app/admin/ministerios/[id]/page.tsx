@@ -21,7 +21,7 @@ export default async function MinistryDetailPage({ params, searchParams }: {
   if (!profile.church_id) redirect("/setup");
 
   const [{ data: ministry }, { data: positions }, { data: members }] = await Promise.all([
-    supabase.from("ministrys").select("id,name,is_active").eq("id", id).eq("church_id", profile.church_id).eq("branch_id", profile.branch_id).maybeSingle(),
+    supabase.from("ministries").select("id,name,is_active").eq("id", id).eq("church_id", profile.church_id).eq("branch_id", profile.branch_id).maybeSingle(),
     supabase.from("ministry_members").select("id,member_id,display_name,position_title,display_order").eq("ministry_id", id).eq("church_id", profile.church_id).order("display_order", { ascending: true }),
     supabase.from("members").select("id,full_name,member_code,phone").eq("church_id", profile.church_id).eq("branch_id", profile.branch_id).order("full_name", { ascending: true }).limit(1000),
   ]);
