@@ -7,7 +7,7 @@ import { MemberPhotoPicker } from "../photo-picker";
 const fieldClass = "mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-amber-600";
 const labelClass = "block text-sm font-medium text-slate-700";
 
-function Field({ label, name, value, type = "text", maxLength }: {
+function Field({ label, name, value, type = "text", maxLength, required }: {
   label: string; name: string; value: string | number | null; type?: string; maxLength?: number; required?: boolean;
 }) {
   return <label className={labelClass}>{label}<input name={name} type={type} defaultValue={value ?? ""} maxLength={maxLength} required={required} className={fieldClass} /></label>;
