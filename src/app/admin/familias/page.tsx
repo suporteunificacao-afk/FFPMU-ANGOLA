@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createFamily, setFamilyResponsible } from "./actions";
+import { createFamily, setFamilyResponsible, removeMemberFromFamily } from "./actions";
 
 const input = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800";
 const button = "rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800";
 
 export default async function FamiliesPage({ searchParams }: {
-  searchParams: Promise<{ created?: string; updated?: string; error?: string }>;
+  searchParams: Promise<{ created?: string; updated?: string; error?: string; removed?: string }>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -32,7 +32,7 @@ export default async function FamiliesPage({ searchParams }: {
     </header>
 
     {params.created && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Família criada com sucesso.</p>}
-    {params.updated && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Responsável familiar actualizado.</p>}
+    {params.removed && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Membro retirado da família. O cadastro do membro foi mantido.</p>}\n    {params.updated && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Responsável familiar actualizado.</p>}
     {params.error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{params.error === "invalid" ? "Verifique os dados seleccionados." : "Não foi possível guardar. Confirme as permissões e tente novamente."}</p>}
 
     <section className="rounded-xl border border-slate-200 bg-white p-5">
@@ -63,7 +63,7 @@ export default async function FamiliesPage({ searchParams }: {
             <button className="shrink-0 rounded-lg border border-blue-700 px-3 py-2 text-sm font-semibold text-blue-800 hover:bg-blue-50">Guardar</button>
           </form>
           <div className="mt-4 border-t border-slate-100 pt-3"><h4 className="text-sm font-semibold text-slate-700">Integrantes</h4>
-            {membersOfFamily.length ? <ul className="mt-2 space-y-2">{membersOfFamily.map(member => <li key={member.id} className="flex items-center justify-between gap-3 text-sm"><span><Link href={"/admin/membros/" + member.id} className="font-medium text-blue-800 hover:underline">{member.full_name}</Link><span className="ml-2 text-xs text-slate-500">{member.category ?? "Sem categoria"}{member.birth_date ? " · " + new Date(member.birth_date + "T00:00:00").toLocaleDateString("pt-AO") : ""}</span></span>{member.id === family.responsible_member_id && <span className="text-xs font-semibold text-emerald-700">Responsável</span>}</li>)}</ul> : <p className="mt-2 text-xs text-slate-500">Sem membros associados. Abra o cadastro de membros e utilize o nome exacto desta família.</p>}
+            {membersOfFamily.length ? <ul className="mt-2 space-y-2">{membersOfFamily.map(member => <li key={member.id} className="flex items-center justify-between gap-3 text-sm"><span><Link href={"/admin/membros/" + member.id} className="font-medium text-blue-800 hover:underline">{member.full_name}</Link><span className="ml-2 text-xs text-slate-500">{member.category ?? "Sem categoria"}{member.birth_date ? " · " + new Date(member.birth_date + "T00:00:00").toLocaleDateString("pt-AO") : ""}</span></span><div className="flex items-center gap-2">{member.id === family.responsible_member_id && <span className="text-xs font-semibold text-emerald-700">Responsável</span>}<form action={removeMemberFromFamily} className="flex items-center gap-2"><input type="hidden" name="family_id" value={family.id}/><input type="hidden" name="member_id" value={member.id}/><label className="flex items-center gap-1 text-[11px] text-slate-500"><input type="checkbox" name="confirm_remove" required className="accent-red-600"/> Confirmar</label><button className="rounded-md border border-red-200 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50">Retirar</button></form></div></li>)}</ul> : <p className="mt-2 text-xs text-slate-500">Sem membros associados. Abra o cadastro de membros e utilize o nome exacto desta família.</p>}
           </div>
           {children.length > 0 && <div className="mt-4 rounded-lg border border-amber-100 bg-amber-50 p-3"><p className="text-xs font-semibold text-amber-900">Menores a acompanhar</p><p className="mt-1 text-xs text-amber-800">{children.map(child => child.full_name).join(", ")}</p><p className="mt-1 text-[11px] text-amber-800">O responsável acima é o contacto familiar de referência; confirme o encarregado legal de cada menor.</p></div>}
         </article>;
