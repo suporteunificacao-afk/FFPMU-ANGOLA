@@ -12,6 +12,7 @@ export function MemberPhotoPicker({ initialUrl }: { initialUrl?: string | null }
 
   return (
     <div className="flex flex-col items-center gap-3">
+      <input type="hidden" name="remove_photo" value={initialUrl && !preview ? "true" : "false"} />
       <label className="group relative flex h-40 w-36 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 text-center transition hover:border-amber-500 hover:bg-amber-50">
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
