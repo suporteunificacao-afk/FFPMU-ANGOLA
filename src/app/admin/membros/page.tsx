@@ -64,6 +64,12 @@ export default async function MembersPage({ searchParams }: {
     {params.error && <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">{params.error === "invalid" ? "Verifique os campos e as datas introduzidas." : params.error === "photo" ? "A fotografia deve ser JPG, PNG ou WEBP e ter no máximo 2 MB. Confirme também as permissões de armazenamento." : params.error === "family" ? "Não foi possível associar a família. Tente novamente." : "Não foi possível guardar. Confirme as permissões e tente novamente."}</p>}
 
     <form id="new-member-form" action={createMember} encType="multipart/form-data" className="space-y-3.5">
+      <Section title="Fotografia do membro">
+        <div className="mt-3 flex flex-wrap items-center gap-5">
+          <MemberPhotoPicker />
+          <p className="max-w-md text-xs leading-5 text-slate-500">Adicione a fotografia de identificação do membro antes de preencher os restantes dados. Formatos aceites: JPG, PNG ou WEBP, até 2 MB.</p>
+        </div>
+      </Section>
       <Section title="Dados pessoais">
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Nome completo" name="full_name" required maxLength={160} placeholder="Digite o nome completo" />
@@ -79,10 +85,7 @@ export default async function MembersPage({ searchParams }: {
           <Field label="Profissão" name="profession" maxLength={120} placeholder="Digite a profissão" />
           <Field label="Data de ingresso na igreja" name="joined_at" type="date" />
         </div>
-        <div className="mt-4 grid gap-4 border-t border-slate-100 pt-4 sm:grid-cols-[150px_1fr]">
-          <div className="flex flex-col items-center gap-2"><MemberPhotoPicker /><span className="text-[11px] text-slate-500">Fotografia do membro</span></div>
-          <div className="grid content-start gap-3 sm:grid-cols-2"><Field label="Nome do cônjuge" name="spouse_name" maxLength={160} /><Field label="Filiação do cônjuge (Pai)" name="spouse_father_name" maxLength={160} /><Field label="Filiação do cônjuge (Mãe)" name="spouse_mother_name" maxLength={160} /><Field label="Pai/Mãe espiritual" name="spiritual_parent" maxLength={160} /></div>
-        </div>
+        <div className="mt-4 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2"><Field label="Nome do cônjuge" name="spouse_name" maxLength={160} /><Field label="Filiação do cônjuge (Pai)" name="spouse_father_name" maxLength={160} /><Field label="Filiação do cônjuge (Mãe)" name="spouse_mother_name" maxLength={160} /><Field label="Pai/Mãe espiritual" name="spiritual_parent" maxLength={160} /></div>
       </Section>
 
       <Section title="Contactos">
