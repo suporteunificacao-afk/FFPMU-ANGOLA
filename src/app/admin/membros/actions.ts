@@ -64,6 +64,7 @@ export async function createMember(formData: FormData) {
   redirect("/admin/membros?created=1");
 }
 
+
 export async function updateMember(formData: FormData) {
   const supabase = await createClient();
   if (!supabase) redirect("/login?setup=required");
@@ -85,7 +86,7 @@ export async function updateMember(formData: FormData) {
     return typeof value === "string" ? value.trim() : "";
   };
   const id = readText("member_id");
-  const fullName = readText("full_name").replace(/\\s+/g, " ");
+  const fullName = readText("full_name").replace(/\s+/g, " ");
   const gender = readText("gender");
   const birthDate = readText("birth_date");
   const phone = readText("phone");
@@ -98,8 +99,14 @@ export async function updateMember(formData: FormData) {
   const status = readText("status");
 
   const allowedStatuses = ["visitante", "em_integracao", "ativo", "inativo", "transferido"];
-  const validEmail = !email || /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);
-  const validDate = (value: string) => {\n    if (!value) return true;\n    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;\n    const parsed = new Date(`${value}T00:00:00.000Z`);\n    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;\n  };
+  const validEmail = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validDate = (value: string) => {
+    if (!value) return true;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const parsed = new Date(value + "T00:00:00.000Z");
+    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+  };
+
   if (
     !id || fullName.length < 3 || fullName.length > 160 ||
     phone.length > 40 || whatsapp.length > 40 || email.length > 254 ||
@@ -107,30 +114,36 @@ export async function updateMember(formData: FormData) {
     gender.length > 40 || address.length > 500 || notes.length > 5000 ||
     !validDate(birthDate) || !validDate(joinedAt) || !validDate(baptizedAt)
   ) {
-    redirect(`/admin/membros/${encodeURIComponent(id)}?error=invalid`);
+    redirect("/admin/membros/" + encodeURIComponent(id) + "?error=invalid");
   }
 
-  const { data: updatedMember, error } = await supabase.from("members").update({
-    full_name: fullName,
-    gender: gender || null,
-    birth_date: birthDate || null,
-    phone: phone || null,
-    whatsapp: whatsapp || null,
-    email: email || null,
-    address: address || null,
-    joined_at: joinedAt || null,
-    baptized_at: baptizedAt || null,
-    status,
-    notes: notes || null,
-    updated_at: new Date().toISOString(),
-  }).eq("id", id).eq("church_id", profile.church_id);
+  const { data: updatedMember, error } = await supabase
+    .from("members")
+    .update({
+      full_name: fullName,
+      gender: gender || null,
+      birth_date: birthDate || null,
+      phone: phone || null,
+      whatsapp: whatsapp || null,
+      email: email || null,
+      address: address || null,
+      joined_at: joinedAt || null,
+      baptized_at: baptizedAt || null,
+      status,
+      notes: notes || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("church_id", profile.church_id)
+    .select("id")
+    .maybeSingle();
 
-  if (error) {
-    redirect(`/admin/membros/${encodeURIComponent(id)}?error=save`);
+  if (error || !updatedMember) {
+    redirect("/admin/membros/" + encodeURIComponent(id) + "?error=save");
   }
 
   revalidatePath("/admin/membros");
-  revalidatePath(`/admin/membros/${id}`);
+  revalidatePath("/admin/membros/" + id);
   revalidatePath("/admin");
-  redirect(`/admin/membros/${id}?updated=1`);
+  redirect("/admin/membros/" + id + "?updated=1");
 }
