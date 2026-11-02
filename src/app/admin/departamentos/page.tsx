@@ -19,7 +19,7 @@ export default async function DepartmentsPage({ searchParams }: {
   if (!profile?.is_active) redirect("/login");
   if (!profile.church_id) redirect("/setup");
 
-  let departmentsQuery = supabase.from("departments").select("id,name,description,is_active,created_at")
+  let departmentsQuery = supabase.from("departments").select("id,name,is_active,created_at")
     .eq("church_id", profile.church_id).eq("branch_id", profile.branch_id).order("name", { ascending: true });
   if (query) departmentsQuery = departmentsQuery.ilike("name", "%" + query.replace(/[,%()]/g, " ") + "%");
   const { data: departments, error } = await departmentsQuery;
@@ -42,13 +42,12 @@ export default async function DepartmentsPage({ searchParams }: {
       </div>
       {error ? <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-900">Não foi possível carregar os departamentos. Verifique a permissão de leitura.</p> : departments?.length ? <div className="grid gap-3 md:grid-cols-2">{departments.map(department => <Link key={department.id} href={"/admin/departamentos/" + department.id} className="rounded-xl border border-slate-200 bg-white p-5 transition hover:border-blue-300 hover:shadow-sm">
         <div className="flex items-start justify-between gap-3"><h3 className="text-lg font-semibold text-[#142b4a]">{department.name}</h3><span className={"rounded-full px-3 py-1 text-xs font-semibold " + (department.is_active ? "bg-emerald-50 text-emerald-800" : "bg-slate-100 text-slate-600")}>{department.is_active ? "Activo" : "Inactivo"}</span></div>
-        <p className="mt-2 line-clamp-2 min-h-10 text-sm text-slate-600">{department.description || "Sem descrição."}</p><p className="mt-4 text-xs font-medium text-blue-800">{counts.get(department.id) ?? 0} integrante(s) · Gerir departamento →</p>
+        <p className="mt-4 text-xs font-medium text-blue-800">{counts.get(department.id) ?? 0} integrante(s) · Gerir departamento →</p>
       </Link>)}</div> : <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">Ainda não existem departamentos. Crie o primeiro abaixo.</div>}
     </section>
     <details className="rounded-xl border border-slate-200 bg-white p-5"><summary className="cursor-pointer list-none font-semibold text-blue-800">＋ Criar departamento</summary>
       <form action={createDepartment} className="mt-4 grid gap-3 sm:grid-cols-2">
         <label className="text-xs font-medium text-slate-700">Nome do departamento *<input name="name" required minLength={2} maxLength={120} placeholder="Ex.: Departamento de Jovens" className={field + " mt-1"}/></label>
-        <label className="text-xs font-medium text-slate-700 sm:col-span-2">Descrição (opcional)<textarea name="description" rows={3} maxLength={2000} placeholder="Descreva a missão ou responsabilidade deste departamento" className={field + " mt-1"}/></label>
         <div className="sm:col-span-2"><button className={button}>Guardar departamento</button></div>
       </form>
     </details>

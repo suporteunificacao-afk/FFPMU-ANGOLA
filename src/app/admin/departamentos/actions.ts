@@ -22,11 +22,9 @@ const detailPath = (id: string) => listPath + "/" + id;
 export async function createDepartment(formData: FormData) {
   const { supabase, user, profile } = await context();
   const name = clean(formData.get("name"), 120);
-  const description = clean(formData.get("description"), 2000);
   if (name.length < 2) redirect(listPath + "?error=invalid");
   const { error } = await supabase.from("departments").insert({
     church_id: profile.church_id, branch_id: profile.branch_id, created_by: user.id,
-    name, description: description || null,
   });
   if (error) redirect(listPath + "?error=save");
   revalidatePath(listPath);
@@ -41,7 +39,7 @@ export async function updateDepartment(formData: FormData) {
   const isActive = formData.get("is_active") === "on";
   if (!id || name.length < 2) redirect(listPath + "?error=invalid");
   const { data, error } = await supabase.from("departments").update({
-    name, description: description || null, is_active: isActive, updated_at: new Date().toISOString(),
+    name, is_active: isActive, updated_at: new Date().toISOString(),
   }).eq("id", id).eq("church_id", profile.church_id).eq("branch_id", profile.branch_id).select("id").maybeSingle();
   if (error || !data) redirect(detailPath(id) + "?error=save");
   revalidatePath(listPath);
@@ -52,19 +50,19 @@ export async function updateDepartment(formData: FormData) {
 export async function addDepartmentMember(formData: FormData) {
   const { supabase, profile } = await context();
   const departmentId = clean(formData.get("department_id"), 64);
-  const memberId = clean(formData.get("member_id"), 64);
+  const displayName = clean(formData.get("display_name"), 160);
+  const memberId = clean(formData.get("member_id"), 64) || null;
   const title = clean(formData.get("position_title"), 120);
-  if (!departmentId || !memberId || !title) redirect(detailPath(departmentId) + "?error=invalid");
-
+  if (!departmentId || displayName.length < 2 || !title) redirect(detailPath(departmentId) + "?error=invalid");
   const [{ data: department }, { data: member }, { data: last }] = await Promise.all([
     supabase.from("departments").select("id").eq("id", departmentId).eq("church_id", profile.church_id).eq("branch_id", profile.branch_id).maybeSingle(),
-    supabase.from("members").select("id").eq("id", memberId).eq("church_id", profile.church_id).eq("branch_id", profile.branch_id).maybeSingle(),
+    memberId ? supabase.from("members").select("id").eq("id", memberId).eq("church_id", profile.church_id).eq("branch_id", profile.branch_id).maybeSingle() : Promise.resolve({ data: null }),
     supabase.from("department_members").select("display_order").eq("department_id", departmentId).eq("church_id", profile.church_id).order("display_order", { ascending: false }).limit(1).maybeSingle(),
   ]);
-  if (!department || !member) redirect(detailPath(departmentId) + "?error=invalid");
+  if (!department || (memberId && !member)) redirect(detailPath(departmentId) + "?error=invalid");
   const { error } = await supabase.from("department_members").insert({
     church_id: profile.church_id, department_id: departmentId, member_id: memberId,
-    position_title: title, display_order: (last?.display_order ?? 0) + 1,
+    display_name: displayName, position_title: title, display_order: (last?.display_order ?? 0) + 1,
   });
   if (error) redirect(detailPath(departmentId) + "?error=member");
   revalidatePath(detailPath(departmentId));
