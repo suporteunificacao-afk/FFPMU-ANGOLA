@@ -17,15 +17,30 @@ export async function createMember(formData: FormData) {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!profile?.is_active || !profile.church_id) redirect("/setup");
+  if (!profile?.is_active) redirect("/login");
+  if (!profile.church_id) redirect("/setup");
 
-  const fullName = String(formData.get("full_name") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim();
-  const status = String(formData.get("status") ?? "em_integracao");
+  const readText = (key: string) => {
+    const value = formData.get(key);
+    return typeof value === "string" ? value.trim() : "";
+  };
+
+  const fullName = readText("full_name").replace(/\s+/g, " ");
+  const phone = readText("phone");
+  const email = readText("email").toLowerCase();
+  const status = readText("status") || "em_integracao";
 
   const allowedStatuses = ["visitante", "em_integracao", "ativo", "inativo", "transferido"];
-  if (fullName.length < 3 || !allowedStatuses.includes(status)) {
+  const validEmail = !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  if (
+    fullName.length < 3 ||
+    fullName.length > 160 ||
+    phone.length > 40 ||
+    email.length > 254 ||
+    !validEmail ||
+    !allowedStatuses.includes(status)
+  ) {
     redirect("/admin/membros?error=invalid");
   }
 
