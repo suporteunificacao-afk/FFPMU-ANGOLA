@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 const path = "/admin/escalas";
+type SupabaseClientType = NonNullable<Awaited<ReturnType<typeof createClient>>>;
 const clean = (value: FormDataEntryValue | null, max = 500) => String(value ?? "").trim().slice(0, max);
 
 async function context() {
@@ -18,7 +19,7 @@ async function context() {
   return { supabase, user, profile };
 }
 
-async function validateLinks(supabase: any, churchId: string, branchId: string | null, serviceId: string, memberId: string) {
+async function validateLinks(supabase: SupabaseClientType, churchId: string, branchId: string | null, serviceId: string, memberId: string) {
   const [{ data: service }, { data: member }] = await Promise.all([
     supabase.from("church_services").select("id").eq("id", serviceId).eq("church_id", churchId).eq("branch_id", branchId).maybeSingle(),
     supabase.from("members").select("id").eq("id", memberId).eq("church_id", churchId).eq("branch_id", branchId).maybeSingle(),
