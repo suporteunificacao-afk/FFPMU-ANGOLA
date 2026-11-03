@@ -38,8 +38,8 @@ export async function createRosterAssignment(formData: FormData) {
   const { data: last } = await supabase.from("service_roster_assignments").select("display_order")
     .eq("service_id", serviceId).eq("church_id", profile.church_id).order("display_order", { ascending: false }).limit(1).maybeSingle();
   const { error } = await supabase.from("service_roster_assignments").insert({
-    church_id: profile.church_id, branch_id: profile.branch_id, service_id, member_id,
-    position_title, notes, display_order: (last?.display_order ?? 0) + 1, created_by: user.id,
+    church_id: profile.church_id, branch_id: profile.branch_id, service_id: serviceId, member_id: memberId,
+    position_title: positionTitle, notes, display_order: (last?.display_order ?? 0) + 1, created_by: user.id,
   });
   if (error) redirect(path + (error.code === "23505" ? "?error=duplicate" : "?error=save"));
   revalidatePath(path);
