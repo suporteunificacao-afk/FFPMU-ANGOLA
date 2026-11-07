@@ -26,7 +26,10 @@ export async function assignRole(formData: FormData) {
     supabase.from("profiles").select("id").eq("id", targetUserId).eq("church_id", churchId).eq("is_active", true).maybeSingle(),
     supabase.from("roles").select("id,name").eq("id", roleId).eq("church_id", churchId).maybeSingle(),
   ]);
-  if (!target || !role) redirect("/admin/utilizadores?error=invalid");\n  if (role.name === "Administrador Nacional" && scopeType !== "national") redirect("/admin/utilizadores?error=scope");\n  if (role.name === "Responsável Regional" && scopeType !== "region") redirect("/admin/utilizadores?error=scope");\n  if (role.name === "Responsável Local" && !["community", "branch"].includes(scopeType)) redirect("/admin/utilizadores?error=scope");
+  if (!target || !role) redirect("/admin/utilizadores?error=invalid");
+  if (role.name === "Administrador Nacional" && scopeType !== "national") redirect("/admin/utilizadores?error=scope");
+  if (role.name === "Responsável Regional" && scopeType !== "region") redirect("/admin/utilizadores?error=scope");
+  if (role.name === "Responsável Local" && !["community", "branch"].includes(scopeType)) redirect("/admin/utilizadores?error=scope");
 
   const payload: { user_id: string; role_id: string; church_id: string; assigned_by: string; region_id?: string; community_id?: string; branch_id?: string } = {
     user_id: targetUserId, role_id: roleId, church_id: churchId, assigned_by: userId,
