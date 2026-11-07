@@ -20,10 +20,12 @@ export default async function OrganizationPage({ searchParams }: {
 
   const [{ data: regions, error: regionError }, { data: communities, error: communityError }, { data: branches, error: branchError }] = await Promise.all([
     supabase.from("regions").select("id,name,code,is_active,created_at").eq("church_id", profile.church_id).order("name"),
-    supabase.from("communities").select("id,region_id,name,code,address,is_active,created_at").eq("church_id", profile.church_id).order("name"),\n    supabase.from("branches").select("id,name,address,community_id,region_id,is_active").eq("church_id", profile.church_id).order("name"),
+    supabase.from("communities").select("id,region_id,name,code,address,is_active,created_at").eq("church_id", profile.church_id).order("name"),
+    supabase.from("branches").select("id,name,address,community_id,region_id,is_active").eq("church_id", profile.church_id).order("name"),
   ]);
   const regionRows = regions ?? [];
-  const communityRows = communities ?? [];\n  const branchRows = branches ?? [];
+  const communityRows = communities ?? [];
+  const branchRows = branches ?? [];
 
   return <main className="mx-auto max-w-6xl space-y-6">
     <header>
