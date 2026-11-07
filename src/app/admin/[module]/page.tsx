@@ -7,7 +7,7 @@ const descriptions: Record<string, string> = {
 
 export default async function ModulePage({ params }: { params: Promise<{ module: string }> }) {
   const { module } = await params;
-  const item = navigation.flatMap(group => group.items).find(entry => entry.href === `/admin/${module}`);
+  const item = navigation.find(group => group.items.some(entry => entry.href === `/admin/${module}`))?.items.find(entry => entry.href === `/admin/${module}`);
   if (!item) notFound();
   return <section className="mx-auto max-w-5xl"><p className="text-sm font-medium text-amber-700">Módulo do sistema</p><h1 className="mt-1 text-3xl font-semibold text-[#142b4a]">{item.label}</h1><p className="mt-3 max-w-2xl leading-7 text-slate-600">{descriptions[module]}</p><div className="mt-8 rounded-xl border border-dashed border-slate-300 bg-white p-8"><p className="font-semibold text-[#142b4a]">Implementação programada</p><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Este módulo está previsto no Prompt Mestre e será implementado na fase correspondente. Os formulários e operações serão ligados à base de dados e às permissões antes de ser considerado concluído. Nenhum registo de demonstração é apresentado como dado real.</p></div></section>;
 }
