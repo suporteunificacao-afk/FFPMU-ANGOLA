@@ -19,7 +19,7 @@ export default async function FamiliesPage({ searchParams }: {
   if (!profile.church_id) redirect("/setup");
 
   const [{ data: families, error }, { data: members }] = await Promise.all([
-    supabase.from("families").select("id,family_name,responsible_member_id,created_at").eq("church_id", profile.church_id).order("family_name"),
+    supabase.from("families").select("id,family_name,family_code,status,phone,email,address,blessing_date,responsible_member_id,created_at").eq("church_id", profile.church_id).order("family_name"),
     supabase.from("members").select("id,full_name,birth_date,phone,family_id,category").eq("church_id", profile.church_id).order("full_name").limit(500),
   ]);
   const people = members ?? [];
@@ -46,8 +46,8 @@ export default async function FamiliesPage({ searchParams }: {
         const responsible = membersOfFamily.find(member => member.id === family.responsible_member_id);
         const children = membersOfFamily.filter(member => member.birth_date && new Date(member.birth_date + "T00:00:00").getTime() > Date.now() - 18 * 365.25 * 24 * 60 * 60 * 1000);
         return <article key={family.id} className="rounded-xl border border-slate-200 bg-white p-5">
-          <div className="flex items-start justify-between gap-3"><div><h3 className="text-lg font-semibold text-[#142b4a]">{family.family_name}</h3><p className="mt-1 text-xs text-slate-500">{membersOfFamily.length} integrante(s) · {children.length} criança(s)/menor(es)</p></div><span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">Família</span></div>
-          <div className="mt-4 rounded-lg bg-slate-50 p-3"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Responsável familiar</p><p className="mt-1 text-sm font-medium text-slate-800">{responsible?.full_name ?? "Ainda não definido"}</p></div>
+          <div className="flex items-start justify-between gap-3"><div><h3 className="text-lg font-semibold text-[#142b4a]">{family.family_name}</h3><p className="mt-1 text-xs font-semibold tracking-wide text-[#bd9148]">{family.family_code}</p><p className="mt-1 text-xs text-slate-500">{membersOfFamily.length} integrante(s) · {children.length} criança(s)/menor(es)</p></div><span className="rounded-full bg-slate-100 px-3 py-1 text-xs capitalize text-slate-700">{({pending:"Pendente",validation:"Em validação",active:"Activa",incomplete:"Incompleta",suspended:"Suspensa",archived:"Arquivada"} as Record<string,string>)[family.status] ?? family.status}</span></div>
+          <div className="mt-4 rounded-lg bg-slate-50 p-3"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Responsável familiar</p><p className="mt-1 text-sm font-medium text-slate-800">{responsible?.full_name ?? "Ainda não definido"}</p>{family.phone && <p className="mt-1 text-xs text-slate-600">Telefone: {family.phone}</p>}{family.email && <p className="mt-1 text-xs text-slate-600">E-mail: {family.email}</p>}{family.address && <p className="mt-1 text-xs text-slate-600">Endereço: {family.address}</p>}{family.blessing_date && <p className="mt-1 text-xs text-slate-600">Data da bênção: {new Date(family.blessing_date + "T00:00:00").toLocaleDateString("pt-AO")}</p>}</div>
           <form action={setFamilyResponsible} className="mt-3 flex flex-col gap-2 sm:flex-row">
             <input type="hidden" name="family_id" value={family.id}/>
             <select name="responsible_member_id" required defaultValue={family.responsible_member_id ?? ""} className={input}>
