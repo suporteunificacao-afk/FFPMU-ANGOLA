@@ -115,3 +115,34 @@ export async function removeFamilyRelationship(formData: FormData) {
   revalidatePath("/admin/familias");
   redirect("/admin/familias?relationRemoved=1");
 }
+
+
+export async function addFamilyHistoryRecord(formData: FormData) {
+  const { supabase, user, profile } = await context();
+  const familyId = String(formData.get("family_id") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const type = String(formData.get("record_type") ?? "outro");
+  const eventDate = String(formData.get("event_date") ?? "");
+  const details = String(formData.get("details") ?? "").trim().slice(0, 3000);
+  const memberId = String(formData.get("related_member_id") ?? "") || null;
+  const allowed = ["nascimento","bencao","alteracao_familiar","acompanhamento","outro"];
+  if (!familyId || title.length < 2 || title.length > 160 || !eventDate || !allowed.includes(type)) redirect("/admin/familias?error=invalid");
+  if (memberId) {
+    const { data: member } = await supabase.from("members").select("id").eq("id",memberId).eq("church_id",profile.church_id).eq("family_id",familyId).maybeSingle();
+    if (!member) redirect("/admin/familias?error=invalid");
+  }
+  const { error } = await supabase.from("family_history_records").insert({church_id:profile.church_id,family_id:familyId,record_type:type,event_date:eventDate,title,details:details||null,related_member_id:memberId,created_by:user.id});
+  if (error) redirect("/admin/familias?error=save");
+  revalidatePath("/admin/familias");
+  redirect("/admin/familias?historyAdded=1");
+}
+
+export async function removeFamilyHistoryRecord(formData: FormData) {
+  const { supabase, profile } = await context();
+  const recordId=String(formData.get("record_id")??""), familyId=String(formData.get("family_id")??"");
+  if(!recordId||!familyId) redirect("/admin/familias?error=invalid");
+  const {error,count}=await supabase.from("family_history_records").delete({count:"exact"}).eq("id",recordId).eq("family_id",familyId).eq("church_id",profile.church_id);
+  if(error||count===0) redirect("/admin/familias?error=save");
+  revalidatePath("/admin/familias");
+  redirect("/admin/familias?historyRemoved=1");
+}
