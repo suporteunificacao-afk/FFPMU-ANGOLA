@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createFamily, setFamilyResponsible, removeMemberFromFamily, addFamilyRelationship, removeFamilyRelationship, addFamilyHistoryRecord, removeFamilyHistoryRecord } from "./actions";
+import { createFamily, setFamilyResponsible, removeMemberFromFamily, addFamilyRelationship, removeFamilyRelationship, addFamilyHistoryRecord, removeFamilyHistoryRecord, addFamilyDocument, removeFamilyDocument } from "./actions";
 
 const input = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800";
 const button = "rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800";
 
 export default async function FamiliesPage({ searchParams }: {
-  searchParams: Promise<{ created?: string; updated?: string; error?: string; removed?: string; relationAdded?: string; relationRemoved?: string; historyAdded?: string; historyRemoved?: string }>;
+  searchParams: Promise<{ created?: string; updated?: string; error?: string; removed?: string; relationAdded?: string; relationRemoved?: string; historyAdded?: string; historyRemoved?: string; documentAdded?: string; documentRemoved?: string }>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -23,11 +23,17 @@ export default async function FamiliesPage({ searchParams }: {
     supabase.from("members").select("id,full_name,birth_date,phone,family_id,category").eq("church_id", profile.church_id).order("full_name").limit(500),
     supabase.from("family_relationships").select("id,family_id,member_id,related_member_id,relationship_type,notes").eq("church_id", profile.church_id).order("created_at"),
     supabase.from("family_history_records").select("id,family_id,record_type,event_date,title,details,related_member_id").eq("church_id", profile.church_id).order("event_date",{ascending:false}),
+    supabase.from("family_documents").select("id,family_id,title,object_path,mime_type,file_size,created_at").eq("church_id", profile.church_id).order("created_at",{ascending:false}),
   ]);
   const people = members ?? [];
   const familyRows = families ?? [];
   const relationshipRows = relationships ?? [];
   const historyRows = history ?? [];
+  const { data: documentRows } = await supabase.from("family_documents").select("id,family_id,title,object_path,mime_type,file_size,created_at").eq("church_id", profile.church_id).order("created_at",{ascending:false});
+  const documents = await Promise.all((documentRows ?? []).map(async document => {
+    const { data } = await supabase.storage.from("family-documents").createSignedUrl(document.object_path, 300);
+    return { ...document, signedUrl: data?.signedUrl ?? null };
+  }));
 
   return <main className="mx-auto max-w-6xl space-y-6">
     <header className="flex flex-wrap items-end justify-between gap-3">
@@ -42,6 +48,9 @@ export default async function FamiliesPage({ searchParams }: {
     {params.relationRemoved && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Relação familiar removida.</p>}
     {params.historyAdded && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Registo adicionado ao histórico familiar.</p>}
     {params.historyRemoved && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Registo removido do histórico familiar.</p>}
+    {params.documentAdded && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Documento familiar enviado com acesso privado.</p>}
+    {params.documentRemoved && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Documento removido.</p>}
+    {params.error === "document" && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">Não foi possível guardar o documento. Use PDF, JPG, PNG ou WEBP até 10 MB e confirme as permissões.</p>}
     {params.error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{params.error === "invalid" ? "Verifique os dados seleccionados." : "Não foi possível guardar. Confirme as permissões e tente novamente."}</p>}
 
 
@@ -66,6 +75,10 @@ export default async function FamiliesPage({ searchParams }: {
           </form>
           <div className="mt-4 border-t border-slate-100 pt-3"><h4 className="text-sm font-semibold text-slate-700">Integrantes</h4>
             {membersOfFamily.length ? <ul className="mt-2 space-y-2">{membersOfFamily.map(member => <li key={member.id} className="flex items-center justify-between gap-3 text-sm"><span><Link href={"/admin/membros/" + member.id} className="font-medium text-blue-800 hover:underline">{member.full_name}</Link><span className="ml-2 text-xs text-slate-500">{member.category ?? "Sem categoria"}{member.birth_date ? " · " + new Date(member.birth_date + "T00:00:00").toLocaleDateString("pt-AO") : ""}</span></span><div className="flex items-center gap-2">{member.id === family.responsible_member_id && <span className="text-xs font-semibold text-emerald-700">Responsável</span>}<form action={removeMemberFromFamily} className="flex items-center gap-2"><input type="hidden" name="family_id" value={family.id}/><input type="hidden" name="member_id" value={member.id}/><label className="flex items-center gap-1 text-[11px] text-slate-500"><input type="checkbox" name="confirm_remove" required className="accent-red-600"/> Confirmar</label><button className="rounded-md border border-red-200 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50">Retirar</button></form></div></li>)}</ul> : <p className="mt-2 text-xs text-slate-500">Sem membros associados. Abra o cadastro de membros e utilize o nome exacto desta família.</p>}
+          </div>
+          <div className="mt-4 border-t border-slate-100 pt-3"><h4 className="text-sm font-semibold text-slate-700">Documentos da família</h4>
+            {documents.filter(document => document.family_id === family.id).length ? <ul className="mt-2 space-y-2">{documents.filter(document => document.family_id === family.id).map(document => <li key={document.id} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-xs"><span><strong>{document.title}</strong><span className="ml-2 text-slate-500">{document.mime_type === "application/pdf" ? "PDF" : "Imagem"} · {(document.file_size / 1024 / 1024).toFixed(2)} MB</span></span><div className="flex items-center gap-3">{document.signedUrl ? <a href={document.signedUrl} target="_blank" rel="noreferrer" className="font-semibold text-blue-800 hover:underline">Abrir</a> : <span className="text-slate-400">Sem acesso</span>}<form action={removeFamilyDocument}><input type="hidden" name="document_id" value={document.id}/><button className="text-red-700 hover:underline">Eliminar</button></form></div></li>)}</ul> : <p className="mt-2 text-xs text-slate-500">Ainda não existem documentos anexados.</p>}
+            <form action={addFamilyDocument} encType="multipart/form-data" className="mt-3 grid gap-2"><input type="hidden" name="family_id" value={family.id}/><input name="title" required minLength={2} maxLength={160} placeholder="Nome do documento (ex.: Certidão)" className={input}/><input name="document" type="file" required accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" className={input}/><p className="text-[11px] text-slate-500">PDF ou imagem · máximo 10 MB. O ficheiro não é público.</p><button className="rounded-lg bg-[#142b4a] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1d3b61]">Enviar documento</button></form>
           </div>
           <div className="mt-4 border-t border-slate-100 pt-3"><h4 className="text-sm font-semibold text-slate-700">Histórico familiar</h4>
             {historyRows.filter(record => record.family_id === family.id).length ? <ul className="mt-2 space-y-2">{historyRows.filter(record => record.family_id === family.id).map(record => <li key={record.id} className="flex items-start justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-xs"><span><strong>{record.title}</strong><span className="ml-2 text-slate-500">{new Date(record.event_date+"T00:00:00").toLocaleDateString("pt-AO")} · {({nascimento:"Nascimento",bencao:"Bênção",alteracao_familiar:"Alteração familiar",acompanhamento:"Acompanhamento",outro:"Outro"} as Record<string,string>)[record.record_type] ?? record.record_type}</span>{record.details && <span className="block mt-1 text-slate-600">{record.details}</span>}</span><form action={removeFamilyHistoryRecord}><input type="hidden" name="record_id" value={record.id}/><input type="hidden" name="family_id" value={family.id}/><button className="text-red-700 hover:underline">Retirar</button></form></li>)}</ul> : <p className="mt-2 text-xs text-slate-500">Sem acontecimentos registados.</p>}
