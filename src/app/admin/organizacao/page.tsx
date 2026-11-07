@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createRegion, createCommunity, setRegionActive, setCommunityActive } from "./actions";
+import { createRegion, createCommunity, setRegionActive, setCommunityActive, createLocalUnit, attachLocalUnit } from "./actions";
 
 const field = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800";
 const button = "rounded-lg bg-[#142b4a] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#203d63]";
@@ -18,12 +18,12 @@ export default async function OrganizationPage({ searchParams }: {
   if (!profile?.is_active) redirect("/login");
   if (!profile.church_id) redirect("/setup");
 
-  const [{ data: regions, error: regionError }, { data: communities, error: communityError }] = await Promise.all([
+  const [{ data: regions, error: regionError }, { data: communities, error: communityError }, { data: branches, error: branchError }] = await Promise.all([
     supabase.from("regions").select("id,name,code,is_active,created_at").eq("church_id", profile.church_id).order("name"),
-    supabase.from("communities").select("id,region_id,name,code,address,is_active,created_at").eq("church_id", profile.church_id).order("name"),
+    supabase.from("communities").select("id,region_id,name,code,address,is_active,created_at").eq("church_id", profile.church_id).order("name"),\n    supabase.from("branches").select("id,name,address,community_id,region_id,is_active").eq("church_id", profile.church_id).order("name"),
   ]);
   const regionRows = regions ?? [];
-  const communityRows = communities ?? [];
+  const communityRows = communities ?? [];\n  const branchRows = branches ?? [];
 
   return <main className="mx-auto max-w-6xl space-y-6">
     <header>
@@ -32,9 +32,9 @@ export default async function OrganizationPage({ searchParams }: {
       <p className="mt-1 text-sm text-slate-600">Estruture a FFPMU Angola por regiões e comunidades. Os nomes são definidos pela própria instituição.</p>
     </header>
 
-    {params.created && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{params.created === "region" ? "Região registada com sucesso." : "Comunidade registada com sucesso."}</p>}
+    {params.created && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{params.created === "region" ? "Região registada com sucesso." : params.created === "community" ? "Comunidade registada com sucesso." : "Unidade local registada com sucesso."}</p>}
     {params.updated && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Estado actualizado.</p>}
-    {(params.error || regionError || communityError) && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">Não foi possível concluir a operação. Verifique a permissão organization.manage e os dados informados.</p>}
+    {(params.error || regionError || communityError || branchError) && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">Não foi possível concluir a operação. Verifique a permissão organization.manage e os dados informados.</p>}
 
     <div className="grid gap-5 lg:grid-cols-2">
       <section className="rounded-xl border border-slate-200 bg-white p-5">
