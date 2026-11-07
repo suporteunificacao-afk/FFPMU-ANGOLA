@@ -146,3 +146,47 @@ export async function removeFamilyHistoryRecord(formData: FormData) {
   revalidatePath("/admin/familias");
   redirect("/admin/familias?historyRemoved=1");
 }
+
+
+export async function addFamilyDocument(formData: FormData) {
+  const { supabase, user, profile } = await context();
+  const familyId = String(formData.get("family_id") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const value = formData.get("document");
+  if (!familyId || title.length < 2 || title.length > 160 || !(value instanceof File) || value.size === 0 || value.size > 10 * 1024 * 1024) {
+    redirect("/admin/familias?error=document");
+  }
+  const allowed = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+  if (!allowed.includes(value.type)) redirect("/admin/familias?error=document");
+  const ext = value.type === "application/pdf" ? "pdf" : value.type === "image/png" ? "png" : value.type === "image/webp" ? "webp" : "jpg";
+  const objectPath = profile.church_id + "/" + familyId + "/" + crypto.randomUUID() + "." + ext;
+  const { error: uploadError } = await supabase.storage.from("family-documents").upload(objectPath, value, {
+    contentType: value.type, cacheControl: "3600", upsert: false,
+  });
+  if (uploadError) redirect("/admin/familias?error=document");
+  const { error } = await supabase.from("family_documents").insert({
+    church_id: profile.church_id, family_id: familyId, title, object_path: objectPath,
+    mime_type: value.type, file_size: value.size, created_by: user.id,
+  });
+  if (error) {
+    await supabase.storage.from("family-documents").remove([objectPath]);
+    redirect("/admin/familias?error=document");
+  }
+  revalidatePath("/admin/familias");
+  redirect("/admin/familias?documentAdded=1");
+}
+
+export async function removeFamilyDocument(formData: FormData) {
+  const { supabase, profile } = await context();
+  const documentId = String(formData.get("document_id") ?? "");
+  if (!documentId) redirect("/admin/familias?error=invalid");
+  const { data: document } = await supabase.from("family_documents")
+    .select("id,family_id,object_path").eq("id", documentId).eq("church_id", profile.church_id).maybeSingle();
+  if (!document) redirect("/admin/familias?error=invalid");
+  const { error: storageError } = await supabase.storage.from("family-documents").remove([document.object_path]);
+  if (storageError) redirect("/admin/familias?error=document");
+  const { error } = await supabase.from("family_documents").delete().eq("id", document.id).eq("church_id", profile.church_id);
+  if (error) redirect("/admin/familias?error=document");
+  revalidatePath("/admin/familias");
+  redirect("/admin/familias?documentRemoved=1");
+}
