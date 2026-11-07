@@ -22,7 +22,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
     supabase.from("regions").select("id,name").eq("church_id", profile.church_id).eq("is_active", true).order("name"),
     supabase.from("communities").select("id,name,region_id").eq("church_id", profile.church_id).eq("is_active", true).order("name"),
     supabase.from("branches").select("id,name,community_id").eq("church_id", profile.church_id).eq("is_active", true).order("name"),
-    supabase.from("role_assignments").select("id,user_id,role_id,region_id,community_id,branch_id,profiles:profiles!role_assignments_user_id_fkey(full_name),roles(name)").eq("church_id", profile.church_id).order("created_at", { ascending: false }),
+    supabase.from("role_assignments").select("id,user_id,role_id,region_id,community_id,branch_id").eq("church_id", profile.church_id).order("created_at", { ascending: false }),
   ]);
   const people = profiles ?? [];
   const roleRows = roles ?? [];
@@ -34,7 +34,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
   return <main className="mx-auto max-w-6xl space-y-6">
     <header><Link href="/admin" className="text-sm text-blue-700 hover:underline">← Painel</Link><h1 className="mt-2 text-3xl font-semibold text-[#142b4a]">Utilizadores e permissões</h1><p className="mt-1 text-sm text-slate-600">Atribua funções a contas existentes e limite o acesso por região, comunidade ou congregação.</p></header>
     {params.assigned && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Função atribuída com sucesso.</p>}
-    {params.error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{params.error === "duplicate" ? "Esta função já está atribuída ao utilizador nesta área." : params.error === "invalid" ? "Verifique o utilizador, a função e a área seleccionada." : "Não foi possível atribuir a função. Confirme se tem permissão para gerir utilizadores."}</p>}
+    {params.error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{params.error === "duplicate" ? "Esta função já está atribuída ao utilizador nesta área." : params.error === "invalid" ? "Verifique o utilizador, a função e a área seleccionada." : params.error === "scope" ? "O tipo de função exige um âmbito específico: nacional, regional ou local." : "Não foi possível atribuir a função. Confirme se tem permissão para gerir utilizadores."}</p>}
     <section className="rounded-xl border border-slate-200 bg-white p-5">
       <h2 className="text-lg font-semibold text-[#142b4a]">Atribuir função</h2>
       <p className="mt-1 text-xs text-slate-500">Esta operação não cria contas nem envia convites; atribui uma função a um utilizador que já tenha concluído o registo.</p>
