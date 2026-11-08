@@ -25,14 +25,27 @@ export default async function EventsPage({ searchParams }: {
   if (params.status && ["Agendado","Em curso","Realizado","Cancelado"].includes(params.status)) eventsQuery = eventsQuery.eq("status", params.status);
   const { data: events, error } = await eventsQuery;
   const ids = (events ?? []).map(e => e.id);
-  const registrationsQuery = ids.length
-    ? supabase.from("event_registrations").select("id,event_id,participant_name,phone,email,status,created_at").eq("church_id", profile.church_id).in("event_id", ids).order("created_at", { ascending: false })
-    : null;
-  const [{ data: registrations }, { data: members }] = await Promise.all([
-    registrationsQuery ? registrationsQuery : Promise.resolve({ data: [] }),
-    supabase.from("members").select("id,full_name").eq("church_id", profile.church_id).order("full_name").limit(500),
-  ]);
-  const registrationsByEvent = new Map<string, NonNullable<typeof registrations>>();
+  type EventRegistration = {
+    id: string;
+    event_id: string;
+    participant_name: string;
+    phone: string | null;
+    email: string | null;
+    status: string;
+    created_at: string;
+  };
+  let registrations: EventRegistration[] = [];
+  if (ids.length) {
+    const result = await supabase.from("event_registrations")
+      .select("id,event_id,participant_name,phone,email,status,created_at")
+      .eq("church_id", profile.church_id).in("event_id", ids)
+      .order("created_at", { ascending: false });
+    registrations = (result.data ?? []) as EventRegistration[];
+  }
+  const { data: members } = await supabase.from("members")
+    .select("id,full_name").eq("church_id", profile.church_id)
+    .order("full_name").limit(500);
+  const registrationsByEvent = new Map<string, EventRegistration[]>();
   for (const registration of registrations ?? []) {
     const list = registrationsByEvent.get(registration.event_id) ?? [];
     list.push(registration);
