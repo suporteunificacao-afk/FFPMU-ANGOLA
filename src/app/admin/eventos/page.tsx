@@ -25,8 +25,11 @@ export default async function EventsPage({ searchParams }: {
   if (params.status && ["Agendado","Em curso","Realizado","Cancelado"].includes(params.status)) eventsQuery = eventsQuery.eq("status", params.status);
   const { data: events, error } = await eventsQuery;
   const ids = (events ?? []).map(e => e.id);
+  const registrationsQuery = ids.length
+    ? supabase.from("event_registrations").select("id,event_id,participant_name,phone,email,status,created_at").eq("church_id", profile.church_id).in("event_id", ids).order("created_at", { ascending: false })
+    : null;
   const [{ data: registrations }, { data: members }] = await Promise.all([
-    ids.length ? supabase.from("event_registrations").select("id,event_id,participant_name,phone,email,status,created_at").eq("church_id", profile.church_id).in("event_id", ids).order("created_at", { ascending: false }) : Promise.resolve({ data: [] as any[] }),
+    registrationsQuery ? registrationsQuery : Promise.resolve({ data: [] }),
     supabase.from("members").select("id,full_name").eq("church_id", profile.church_id).order("full_name").limit(500),
   ]);
   const registrationsByEvent = new Map<string, NonNullable<typeof registrations>>();
