@@ -16,10 +16,15 @@ export default function HomePage() {
             <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#142b4a] text-lg font-bold text-[#e6c27a]">F</span>
             <span><span className="block text-sm font-extrabold tracking-[.12em] text-[#142b4a]">FFPMU ANGOLA</span><span className="block text-[10px] uppercase tracking-[.18em] text-slate-500">Fé • Comunidade • Serviço</span></span>
           </Link>
-          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
-            <a href="#sobre" className="transition hover:text-[#b38335]">Sobre o portal</a>
-            <a href="#areas" className="transition hover:text-[#b38335]">Áreas de gestão</a>
-            <a href="#contacto" className="transition hover:text-[#b38335]">Informações</a>
+          <nav aria-label="Navegação principal" className="hidden items-center gap-4 text-xs font-semibold text-slate-600 xl:flex">
+            <Link href="/sobre" className="transition hover:text-[#b38335]">Sobre</Link>
+            <Link href="/organizacao" className="transition hover:text-[#b38335]">Organização</Link>
+            <Link href="/departamentos" className="transition hover:text-[#b38335]">Departamentos</Link>
+            <Link href="/actividades" className="transition hover:text-[#b38335]">Actividades</Link>
+            <Link href="/eventos-publicos" className="transition hover:text-[#b38335]">Eventos</Link>
+            <Link href="/noticias" className="transition hover:text-[#b38335]">Notícias</Link>
+            <Link href="/biblioteca" className="transition hover:text-[#b38335]">Biblioteca</Link>
+            <Link href="/contactos" className="transition hover:text-[#b38335]">Contactos</Link>
           </nav>
           <Link href="/login" className="rounded-full bg-[#142b4a] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#203e64]">Entrar no sistema <span aria-hidden="true">↗</span></Link>
         </div>
