@@ -190,3 +190,37 @@ export async function removeFamilyDocument(formData: FormData) {
   revalidatePath("/admin/familias");
   redirect("/admin/familias?documentRemoved=1");
 }
+
+
+export async function addFamilySensitiveRecord(formData: FormData) {
+  const { supabase, user, profile } = await context();
+  const familyId = String(formData.get("family_id") ?? "");
+  const type = String(formData.get("record_type") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const date = String(formData.get("record_date") ?? "") || null;
+  const details = String(formData.get("details") ?? "").trim().slice(0, 5000);
+  const level = String(formData.get("sensitivity_level") ?? "restricted");
+  if (!familyId || !["seonghwa", "matching"].includes(type) || title.length < 2 || title.length > 160 || !["restricted", "highly_restricted"].includes(level) || (date && !/^\d{4}-\d{2}-\d{2}$/.test(date))) {
+    redirect("/admin/familias?error=sensitive");
+  }
+  const { error } = await supabase.from("family_sensitive_records").insert({
+    church_id: profile.church_id, family_id: familyId, record_type: type,
+    record_date: date, title, details: details || null,
+    sensitivity_level: level, created_by: user.id,
+  });
+  if (error) redirect("/admin/familias?error=sensitive");
+  revalidatePath("/admin/familias");
+  redirect("/admin/familias?sensitiveAdded=1");
+}
+
+export async function removeFamilySensitiveRecord(formData: FormData) {
+  const { supabase, profile } = await context();
+  const recordId = String(formData.get("record_id") ?? "");
+  const familyId = String(formData.get("family_id") ?? "");
+  if (!recordId || !familyId) redirect("/admin/familias?error=invalid");
+  const { error, count } = await supabase.from("family_sensitive_records").delete({ count: "exact" })
+    .eq("id", recordId).eq("family_id", familyId).eq("church_id", profile.church_id);
+  if (error || count === 0) redirect("/admin/familias?error=sensitive");
+  revalidatePath("/admin/familias");
+  redirect("/admin/familias?sensitiveRemoved=1");
+}
