@@ -1,8 +1,46 @@
 import { PublicSectionPage } from "@/components/public-section-page";
+import { createClient } from "@/lib/supabase/server";
 
-export default function PublicEventsPage() {
-  return <PublicSectionPage eyebrow="Agenda" title="Eventos e seminários" introduction="Nesta área serão apresentados os eventos marcados como públicos e autorizados para divulgação. A agenda será ligada aos registos administrativos numa etapa própria." items={[
-    { title: "Próximos eventos", description: "A agenda pública será apresentada aqui quando existirem eventos publicados e validados." },
-    { title: "Seminários e encontros", description: "Informações de inscrição, datas e locais serão divulgadas apenas após confirmação." },
-  ]} />;
+export const revalidate = 300;
+
+export default async function PublicEventsPage() {
+  const supabase = await createClient();
+  const { data: events } = supabase
+    ? await supabase
+        .from("events")
+        .select("id,title,description,event_type,starts_at,ends_at,location,registration_required,capacity,status")
+        .eq("is_public", true)
+        .in("status", ["Agendado", "Em curso", "Realizado"])
+        .gte("starts_at", new Date().toISOString())
+        .order("starts_at", { ascending: true })
+        .limit(12)
+    : { data: [] };
+
+  return (
+    <PublicSectionPage
+      eyebrow="Agenda"
+      title="Eventos e seminários"
+      introduction="Consulte os eventos e seminários que a FFPMU ANGOLA autorizou para divulgação pública."
+      items={(events ?? []).length ? (events ?? []).map((event) => ({
+        title: event.title,
+        description: [
+          event.event_type,
+          new Date(event.starts_at).toLocaleString("pt-AO", {
+            dateStyle: "full",
+            timeStyle: "short",
+            timeZone: "Africa/Luanda",
+          }),
+          event.location,
+          event.description,
+          event.registration_required ? "Inscrição obrigatória." : null,
+          event.capacity ? `Vagas limitadas: ${event.capacity} participantes.` : null,
+        ].filter(Boolean).join(" · "),
+      })) : [
+        {
+          title: "Não há eventos públicos agendados",
+          description: "Quando a equipa administrativa publicar eventos para divulgação pública, as informações aparecerão nesta página.",
+        },
+      ]}
+    />
+  );
 }
