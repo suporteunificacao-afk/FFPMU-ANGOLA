@@ -46,6 +46,31 @@ export async function createPublicContent(formData: FormData) {
   redirect(adminPath + "?created=1");
 }
 
+
+export async function editPublicContent(formData: FormData) {
+  const { supabase, user, profile } = await context();
+  const id = clean(formData.get("id"), 64);
+  const title = clean(formData.get("title"), 180);
+  const contentType = clean(formData.get("content_type"), 20);
+  const summary = clean(formData.get("summary"), 500) || null;
+  const body = clean(formData.get("body"), 20000) || null;
+  const category = clean(formData.get("category"), 80) || null;
+  const externalUrl = clean(formData.get("external_url"), 1000) || null;
+  if (!id || title.length < 3 || !["noticia","comunicado","biblioteca"].includes(contentType) || (externalUrl && !/^https:\/\//i.test(externalUrl))) redirect(adminPath + "?error=invalid");
+  const { data: current, error: readError } = await supabase.from("public_content_items")
+    .select("status,is_public,published_at").eq("id", id).eq("church_id", profile.church_id).maybeSingle();
+  if (readError || !current) redirect(adminPath + "?error=save");
+  const { error } = await supabase.from("public_content_items").update({
+    title, content_type: contentType, summary, body, category, external_url: externalUrl,
+    updated_by: user.id, updated_at: new Date().toISOString(),
+  }).eq("id", id).eq("church_id", profile.church_id);
+  if (error) redirect(adminPath + "?error=save");
+  revalidatePath(adminPath);
+  revalidatePath("/noticias");
+  revalidatePath("/biblioteca");
+  redirect(adminPath + "?edited=1");
+}
+
 export async function updatePublicContentStatus(formData: FormData) {
   const { supabase, user, profile } = await context();
   const id = clean(formData.get("id"), 64);
