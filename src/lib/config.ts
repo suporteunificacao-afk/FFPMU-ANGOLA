@@ -28,6 +28,7 @@ export const navigation = [
   ] },
   { title: "Gestão", items: [
     { label: "Acompanhamento pastoral", href: "/admin/pastoral", icon: "hand-heart" },
+    { label: "Conteúdos e publicações", href: "/admin/conteudos", icon: "megaphone" },
     { label: "Comunicação e avisos", href: "/admin/comunicacao", icon: "megaphone" },
     { label: "Gestão financeira", href: "/admin/financeiro", icon: "wallet" },
     { label: "Relatórios", href: "/admin/relatorios", icon: "chart-no-axes-combined" },
