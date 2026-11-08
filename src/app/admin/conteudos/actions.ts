@@ -20,6 +20,71 @@ async function context() {
   return { supabase, user, profile, scope: assignments?.[0] ?? { region_id: null, community_id: null, branch_id: profile.branch_id } };
 }
 
+
+const libraryMimeTypes = [
+  "application/pdf", "image/jpeg", "image/png", "image/webp",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+];
+const libraryExtensions: Record<string,string> = {
+  "application/pdf":"pdf", "image/jpeg":"jpg", "image/png":"png", "image/webp":"webp",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":"docx",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":"xlsx",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation":"pptx",
+};
+
+export async function uploadLibraryFile(formData: FormData) {
+  const { supabase, user, profile } = await context();
+  const id = clean(formData.get("id"), 64);
+  const file = formData.get("file");
+  if (!id || !(file instanceof File) || file.size < 1 || file.size > 20 * 1024 * 1024 || !libraryMimeTypes.includes(file.type)) {
+    redirect(adminPath + "?error=file");
+  }
+  const { data: item } = await supabase.from("public_content_items")
+    .select("id,content_type,file_path").eq("id", id).eq("church_id", profile.church_id).maybeSingle();
+  if (!item || item.content_type !== "biblioteca") redirect(adminPath + "?error=file");
+  if (item.file_path) {
+    const { error: removeError } = await supabase.storage.from("public-library").remove([item.file_path]);
+    if (removeError) redirect(adminPath + "?error=file");
+  }
+  const path = profile.church_id + "/" + id + "/" + crypto.randomUUID() + "." + libraryExtensions[file.type];
+  const { error: prepareError } = await supabase.from("public_content_items").update({
+    file_path: path, file_name: file.name.slice(0, 255), file_mime_type: file.type, file_size: file.size,
+    updated_by: user.id, updated_at: new Date().toISOString(),
+  }).eq("id", id).eq("church_id", profile.church_id);
+  if (prepareError) redirect(adminPath + "?error=file");
+  const { error: uploadError } = await supabase.storage.from("public-library").upload(path, file, {
+    contentType: file.type, cacheControl: "3600", upsert: false,
+  });
+  if (uploadError) {
+    await supabase.from("public_content_items").update({file_path:null,file_name:null,file_mime_type:null,file_size:null})
+      .eq("id", id).eq("church_id", profile.church_id);
+    redirect(adminPath + "?error=file");
+  }
+  revalidatePath(adminPath);
+  revalidatePath("/biblioteca");
+  redirect(adminPath + "?fileUploaded=1");
+}
+
+export async function removeLibraryFile(formData: FormData) {
+  const { supabase, user, profile } = await context();
+  const id = clean(formData.get("id"), 64);
+  const { data: item } = await supabase.from("public_content_items")
+    .select("id,file_path").eq("id", id).eq("church_id", profile.church_id).maybeSingle();
+  if (!item?.file_path) redirect(adminPath + "?error=file");
+  const { error: removeError } = await supabase.storage.from("public-library").remove([item.file_path]);
+  if (removeError) redirect(adminPath + "?error=file");
+  const { error } = await supabase.from("public_content_items").update({
+    file_path:null,file_name:null,file_mime_type:null,file_size:null,
+    updated_by:user.id,updated_at:new Date().toISOString(),
+  }).eq("id", id).eq("church_id", profile.church_id);
+  if (error) redirect(adminPath + "?error=file");
+  revalidatePath(adminPath);
+  revalidatePath("/biblioteca");
+  redirect(adminPath + "?fileRemoved=1");
+}
+
 export async function createPublicContent(formData: FormData) {
   const { supabase, user, profile, scope } = await context();
   const title = clean(formData.get("title"), 180);
