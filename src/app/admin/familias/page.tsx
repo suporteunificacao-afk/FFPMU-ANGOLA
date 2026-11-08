@@ -18,7 +18,7 @@ export default async function FamiliesPage({ searchParams }: {
   if (!profile?.is_active) redirect("/login");
   if (!profile.church_id) redirect("/setup");
 
-  const [{ data: families, error }, { data: members }, { data: relationships }, { data: history }] = await Promise.all([
+  const [{ data: families, error }, { data: members }, { data: relationships }, { data: history }, { data: documentRows }, { data: sensitiveRecords }] = await Promise.all([
     supabase.from("families").select("id,family_name,family_code,status,phone,email,address,blessing_date,responsible_member_id,created_at").eq("church_id", profile.church_id).order("family_name"),
     supabase.from("members").select("id,full_name,birth_date,phone,family_id,category").eq("church_id", profile.church_id).order("full_name").limit(500),
     supabase.from("family_relationships").select("id,family_id,member_id,related_member_id,relationship_type,notes").eq("church_id", profile.church_id).order("created_at"),
@@ -30,8 +30,6 @@ export default async function FamiliesPage({ searchParams }: {
   const familyRows = families ?? [];
   const relationshipRows = relationships ?? [];
   const historyRows = history ?? [];
-  const { data: documentRows } = await supabase.from("family_documents").select("id,family_id,title,object_path,mime_type,file_size,created_at").eq("church_id", profile.church_id).order("created_at",{ascending:false});
-  const { data: sensitiveRecords } = await supabase.from("family_sensitive_records").select("id,family_id,record_type,record_date,title,details,sensitivity_level,created_at").eq("church_id", profile.church_id).order("record_date",{ascending:false});
   const sensitiveRows = sensitiveRecords ?? [];
   const documents = await Promise.all((documentRows ?? []).map(async document => {
     const { data } = await supabase.storage.from("family-documents").createSignedUrl(document.object_path, 300);
