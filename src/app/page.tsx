@@ -28,6 +28,18 @@ export default function HomePage() {
           </nav>
           <Link href="/login" className="rounded-full bg-[#142b4a] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#203e64]">Entrar no sistema <span aria-hidden="true">↗</span></Link>
         </div>
+        <nav aria-label="Navegação móvel" className="border-t border-slate-100 px-5 py-3 xl:hidden">
+          <div className="mx-auto flex max-w-7xl gap-5 overflow-x-auto whitespace-nowrap text-xs font-semibold text-slate-600">
+            <Link href="/sobre" className="hover:text-[#b38335]">Sobre</Link>
+            <Link href="/organizacao" className="hover:text-[#b38335]">Organização</Link>
+            <Link href="/departamentos" className="hover:text-[#b38335]">Departamentos</Link>
+            <Link href="/actividades" className="hover:text-[#b38335]">Actividades</Link>
+            <Link href="/eventos-publicos" className="hover:text-[#b38335]">Eventos</Link>
+            <Link href="/noticias" className="hover:text-[#b38335]">Notícias</Link>
+            <Link href="/biblioteca" className="hover:text-[#b38335]">Biblioteca</Link>
+            <Link href="/contactos" className="hover:text-[#b38335]">Contactos</Link>
+          </div>
+        </nav>
       </header>
 
       <section className="relative isolate">
