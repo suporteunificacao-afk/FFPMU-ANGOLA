@@ -4,7 +4,7 @@ type PublicSectionPageProps = {
   eyebrow: string;
   title: string;
   introduction: string;
-  items: { title: string; description: string }[];
+  items: { title: string; description: string; href?: string | null }[];
 };
 
 export function PublicSectionPage({ eyebrow, title, introduction, items }: PublicSectionPageProps) {
@@ -30,7 +30,8 @@ export function PublicSectionPage({ eyebrow, title, introduction, items }: Publi
             <article key={item.title} className="rounded-2xl border border-slate-200 bg-white p-7">
               <span className="text-xs font-bold tracking-[.18em] text-[#b38335]">{String(index + 1).padStart(2, "0")}</span>
               <h2 className="mt-4 text-xl font-semibold text-[#142b4a]">{item.title}</h2>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{item.description}</p>
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-600">{item.description}</p>
+              {item.href && <a href={item.href} target="_blank" rel="noreferrer" className="mt-4 inline-block text-sm font-semibold text-blue-700 underline">Abrir recurso ↗</a>}
             </article>
           ))}
         </div>
