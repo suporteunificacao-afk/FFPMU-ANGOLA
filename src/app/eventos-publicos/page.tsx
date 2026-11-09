@@ -11,7 +11,7 @@ export default async function PublicEventsPage() {
         .select("id,title,description,event_type,starts_at,ends_at,location,registration_required,capacity,status")
         .eq("is_public", true)
         .in("status", ["Agendado", "Em curso"])
-        .or(`starts_at.gte.${new Date().toISOString()},status.eq.Em curso`)
+        .or(`starts_at.gte.${new Date().toISOString()},status.eq."Em curso"` )
         .order("starts_at", { ascending: true })
         .limit(12)
     : { data: [] };
