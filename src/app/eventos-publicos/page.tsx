@@ -25,11 +25,17 @@ export default async function PublicEventsPage() {
         title: event.title,
         description: [
           event.event_type,
-          new Date(event.starts_at).toLocaleString("pt-AO", {
+          `Início: ${new Date(event.starts_at).toLocaleString("pt-AO", {
             dateStyle: "full",
             timeStyle: "short",
             timeZone: "Africa/Luanda",
-          }),
+          })}`,
+          event.ends_at ? `Fim: ${new Date(event.ends_at).toLocaleString("pt-AO", {
+            dateStyle: "medium",
+            timeStyle: "short",
+            timeZone: "Africa/Luanda",
+          })}` : null,
+          event.status === "Em curso" ? "A decorrer" : "Agendado",
           event.location,
           event.description,
           event.registration_required ? "Inscrição obrigatória." : null,
