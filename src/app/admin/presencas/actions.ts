@@ -65,10 +65,11 @@ export async function updateAttendance(formData: FormData) {
   const status = clean(formData.get("status"), 20);
   const notes = clean(formData.get("notes"), 1000) || null;
   if (!id || !serviceId || !validStatuses.includes(status)) redirect(path + "?error=invalid");
-  const { data, error } = await supabase.from("service_attendance")
+  let updateQuery = supabase.from("service_attendance")
     .update({ status, notes, marked_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-    .eq("id", id).eq("service_id", serviceId).eq("church_id", profile.church_id)
-    .eq("branch_id", profile.branch_id).select("id").maybeSingle();
+    .eq("id", id).eq("service_id", serviceId).eq("church_id", profile.church_id);
+  updateQuery = profile.branch_id ? updateQuery.eq("branch_id", profile.branch_id) : updateQuery.is("branch_id", null);
+  const { data, error } = await updateQuery.select("id").maybeSingle();
   if (error || !data) redirect(path + "?service_id=" + serviceId + "&error=save");
   revalidatePath(path);
   redirect(path + "?service_id=" + serviceId + "&updated=1");
@@ -79,9 +80,10 @@ export async function deleteAttendance(formData: FormData) {
   const id = clean(formData.get("attendance_id"), 64);
   const serviceId = clean(formData.get("service_id"), 64);
   if (!id || !serviceId) redirect(path + "?error=invalid");
-  const { data, error } = await supabase.from("service_attendance").delete()
-    .eq("id", id).eq("service_id", serviceId).eq("church_id", profile.church_id)
-    .eq("branch_id", profile.branch_id).select("id").maybeSingle();
+  let deleteQuery = supabase.from("service_attendance").delete()
+    .eq("id", id).eq("service_id", serviceId).eq("church_id", profile.church_id);
+  deleteQuery = profile.branch_id ? deleteQuery.eq("branch_id", profile.branch_id) : deleteQuery.is("branch_id", null);
+  const { data, error } = await deleteQuery.select("id").maybeSingle();
   if (error || !data) redirect(path + "?service_id=" + serviceId + "&error=save");
   revalidatePath(path);
   redirect(path + "?service_id=" + serviceId + "&deleted=1");
