@@ -94,7 +94,7 @@ export async function createRepertoire(formData: FormData) {
     redirect(path + "?error=service");
   }
   const { error } = await supabase.from("repertoires").insert({
-    church_id: profile.church_id, branch_id: profile.branch_id, service_id,
+    church_id: profile.church_id, branch_id: profile.branch_id, service_id: serviceId,
     title, notes, is_favorite: isFavorite, created_by: user.id,
   });
   if (error) redirect(path + "?error=save");
