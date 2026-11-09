@@ -33,7 +33,15 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
   const confirmed = rows.filter(row => row.status === "confirmado");
   const incoming = confirmed.filter(row => row.transaction_type === "entrada").reduce((sum, row) => sum + Number(row.amount), 0);
   const outgoing = confirmed.filter(row => row.transaction_type === "saida").reduce((sum, row) => sum + Number(row.amount), 0);
-  const canCancel = !!(await supabase.rpc("has_permission", { permission_key: "finance.cancel" }).then(r => r.data).catch(() => false));
+  const { data: assignments } = await supabase.from("role_assignments").select("role_id").eq("user_id", user.id).eq("church_id", profile.church_id);
+  const roleIds = (assignments ?? []).map(item => item.role_id);
+  let canCancel = false;
+  if (roleIds.length) {
+    const { data: permissions } = await supabase.from("role_permissions")
+      .select("role_id,permissions!inner(permission_key)")
+      .in("role_id", roleIds).eq("permissions.permission_key", "finance.cancel");
+    canCancel = !!permissions?.length;
+  }
 
   return <main className="mx-auto max-w-6xl space-y-6">
     <header><p className="text-sm font-medium text-amber-700">Administração e tesouraria</p><h1 className="mt-1 text-3xl font-semibold text-[#142b4a]">Gestão financeira</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Registe entradas e saídas, acompanhe o saldo dos movimentos e mantenha o histórico. Todos os valores são apresentados em Kwanzas (Kz).</p></header>
