@@ -42,7 +42,7 @@ create table public.repertoires (
   constraint repertoires_branch_same_church foreign key (branch_id, church_id)
     references public.branches(id, church_id) on delete cascade,
   constraint repertoires_service_same_church foreign key (service_id, church_id)
-    references public.church_services(id, church_id) on delete set null
+    references public.church_services(id, church_id) on delete restrict
 );
 
 create table public.repertoire_items (
