@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { cancelFinanceTransaction, createFinanceTransaction } from "./actions";
@@ -59,7 +60,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
         <label className="text-xs font-medium text-slate-600">De<input type="date" name="from" value={from} max={to || undefined} className={field+" mt-1"}/></label>
         <label className="text-xs font-medium text-slate-600">Até<input type="date" name="to" value={to} min={from || undefined} className={field+" mt-1"}/></label>
         <button className="self-end rounded-lg bg-[#142b4a] px-4 py-2.5 text-sm font-semibold text-white">Aplicar</button>
-        <a href="/admin/financeiro" className="self-end rounded-lg border border-slate-300 px-4 py-2.5 text-center text-sm font-semibold text-slate-700">Limpar</a>
+        <Link href="/admin/financeiro" className="self-end rounded-lg border border-slate-300 px-4 py-2.5 text-center text-sm font-semibold text-slate-700">Limpar</Link>
       </form>
     </section>
     <section className="rounded-xl border border-slate-200 bg-white p-5">
