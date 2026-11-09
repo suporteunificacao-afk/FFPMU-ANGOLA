@@ -44,23 +44,25 @@ export async function uploadLibraryFile(formData: FormData) {
   const { data: item } = await supabase.from("public_content_items")
     .select("id,content_type,file_path").eq("id", id).eq("church_id", profile.church_id).maybeSingle();
   if (!item || item.content_type !== "biblioteca") redirect(adminPath + "?error=file");
-  if (item.file_path) {
-    const { error: removeError } = await supabase.storage.from("public-library").remove([item.file_path]);
-    if (removeError) redirect(adminPath + "?error=file");
-  }
+  const previousPath = item.file_path;
   const path = profile.church_id + "/" + id + "/" + crypto.randomUUID() + "." + libraryExtensions[file.type];
-  const { error: prepareError } = await supabase.from("public_content_items").update({
-    file_path: path, file_name: file.name.slice(0, 255), file_mime_type: file.type, file_size: file.size,
-    updated_by: user.id, updated_at: new Date().toISOString(),
-  }).eq("id", id).eq("church_id", profile.church_id);
-  if (prepareError) redirect(adminPath + "?error=file");
   const { error: uploadError } = await supabase.storage.from("public-library").upload(path, file, {
     contentType: file.type, cacheControl: "3600", upsert: false,
   });
-  if (uploadError) {
-    await supabase.from("public_content_items").update({file_path:null,file_name:null,file_mime_type:null,file_size:null})
-      .eq("id", id).eq("church_id", profile.church_id);
+  if (uploadError) redirect(adminPath + "?error=file");
+
+  const { error: updateError } = await supabase.from("public_content_items").update({
+    file_path: path, file_name: file.name.slice(0, 255), file_mime_type: file.type, file_size: file.size,
+    updated_by: user.id, updated_at: new Date().toISOString(),
+  }).eq("id", id).eq("church_id", profile.church_id);
+  if (updateError) {
+    await supabase.storage.from("public-library").remove([path]);
     redirect(adminPath + "?error=file");
+  }
+
+  // Keep the previous file until the new upload and database update both succeed.
+  if (previousPath) {
+    await supabase.storage.from("public-library").remove([previousPath]);
   }
   revalidatePath(adminPath);
   revalidatePath("/biblioteca");
