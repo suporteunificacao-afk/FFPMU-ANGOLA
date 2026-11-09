@@ -1,0 +1,1 @@
+grant select (file_path, file_name) on table public.public_content_items to anon;

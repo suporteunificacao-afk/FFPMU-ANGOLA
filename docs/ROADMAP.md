@@ -3,14 +3,16 @@
 ## Fase 1 — Fundação
 - [x] Repositório e estrutura inicial Next.js/TypeScript
 - [x] Identidade visual base e navegação pública
-- [x] Ecrã inicial de autenticação preparado para Supabase
-- [ ] Criar projeto Supabase e configurar variáveis
-- [ ] Migrações PostgreSQL, RLS e modelo de igreja/congregação
-- [ ] Perfis, funções e permissões validados no servidor e na base de dados
-- [ ] Testes de autenticação e autorização
+- [x] Ecrãs de autenticação e primeiro acesso preparados para Supabase
+- [x] Criar projeto Supabase
+- [x] Aplicar núcleo inicial PostgreSQL, RLS e modelo de igreja/congregação
+- [x] Criar catálogo inicial de permissões e provisionamento do primeiro administrador
+- [ ] Configurar variáveis de ambiente no ambiente de execução
+- [ ] Executar testes de autenticação, bootstrap e autorização
 
 ## Fase 2 — Pessoas e organização
-Membros, famílias, visitantes, departamentos e ministérios.
+- [ ] Membros: primeiro fluxo de criação e listagem implementado; falta validar ponta a ponta e completar edição, arquivo, pesquisa e ficha individual
+- [ ] Visitantes, famílias, departamentos e ministérios
 
 ## Fase 3 — Cultos e louvor
 Cultos, equipas, músicos, disponibilidade, escalas, confirmações e repertório.
