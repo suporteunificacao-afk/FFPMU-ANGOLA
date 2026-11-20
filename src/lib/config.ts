@@ -12,6 +12,7 @@ export const navigation = [
     { label: "Membros", href: "/admin/membros", icon: "users" },
     { label: "Visitantes", href: "/admin/visitantes", icon: "user-plus" },
     { label: "Famílias", href: "/admin/familias", icon: "house" },
+    { label: "Regiões e comunidades", href: "/admin/organizacao", icon: "network" },
   ] },
   { title: "Organização", items: [
     { label: "Departamentos", href: "/admin/departamentos", icon: "network" },
@@ -27,6 +28,7 @@ export const navigation = [
   ] },
   { title: "Gestão", items: [
     { label: "Acompanhamento pastoral", href: "/admin/pastoral", icon: "hand-heart" },
+    { label: "Conteúdos e publicações", href: "/admin/conteudos", icon: "megaphone" },
     { label: "Comunicação e avisos", href: "/admin/comunicacao", icon: "megaphone" },
     { label: "Gestão financeira", href: "/admin/financeiro", icon: "wallet" },
     { label: "Relatórios", href: "/admin/relatorios", icon: "chart-no-axes-combined" },
