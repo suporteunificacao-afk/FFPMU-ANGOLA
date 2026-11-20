@@ -17,7 +17,8 @@ export default function RecoverPasswordPage() {
     setErrorMessage("");
     try {
       const supabase = createClient();
-      const redirectTo = new URL("/auth/callback?next=/redefinir-senha", window.location.origin).toString();
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ffpmu-angola.vercel.app";
+      const redirectTo = new URL("/auth/callback?next=/redefinir-senha", siteUrl).toString();
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
       if (error) throw error;
       setMessage("Se existir uma conta associada a este endereço, receberá um e-mail com as instruções para criar uma nova palavra-passe. Verifique também a pasta de spam.");
